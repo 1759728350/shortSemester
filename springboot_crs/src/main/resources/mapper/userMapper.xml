@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--约束规则-->
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace对应mapper接口的全类名-->
+<mapper namespace="com.example.springboot_crs.mapper.UserMapper">
+    <update id="update">
+        update user
+        <set>
+            <if test="userAccount != null and userAccount !=''">
+                userAccount = #{userAccount}
+            </if>
+            <if test="userPassword != null and userPassword !=''">
+                userPassword = #{userPassword}
+            </if>
+            <if test="userLoc != null and userLoc !=''">
+                userLoc = #{userLoc}
+            </if>
+            <if test="userEmail != null and userEmail !=''">
+                userEmail = #{userEmail}
+            </if>
+            <if test="userName != null and userName !=''">
+                userName = #{userName}
+            </if>
+            <if test="userPhone != null and userPhone!=''">
+                userPhone = #{userPhone}
+            </if>
+        </set>
+        <where>
+            userId = #{userId}
+        </where>
+    </update>
+</mapper>
