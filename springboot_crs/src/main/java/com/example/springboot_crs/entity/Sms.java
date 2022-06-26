@@ -13,9 +13,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Sms {
-
+    //手机号
     private String phoneNum;
+    //验证码
     private String code;
+    //过期重发时间
     private int min;
 
 }
