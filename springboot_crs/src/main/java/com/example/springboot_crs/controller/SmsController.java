@@ -3,6 +3,8 @@ package com.example.springboot_crs.controller;
 import cn.hutool.json.JSONObject;
 import com.example.springboot_crs.entity.Sms;
 import com.example.springboot_crs.utils.VerificationCodeUtils;
+import com.example.springboot_crs.vo.ErrorCode;
+import com.example.springboot_crs.vo.Result;
 import com.github.qcloudsms.SmsSingleSender;
 import com.github.qcloudsms.SmsSingleSenderResult;
 import com.github.qcloudsms.httpclient.HTTPException;
@@ -23,7 +25,7 @@ public class SmsController {
      * @date: 2022-06-26 12:03
      */
     @PostMapping("/sendCode")
-    public void sms(@RequestBody JSONObject jsonObject){
+    public Result sms(@RequestBody JSONObject jsonObject) {
 
         Sms sms = new Sms(jsonObject.getStr("phoneNum"), VerificationCodeUtils.generateCode(), 1);
 
@@ -38,9 +40,16 @@ public class SmsController {
         try {
             SmsSingleSenderResult result = sender.sendWithParam("86", sms.getPhoneNum(),
                     templateId, params, smsSign, "", "");
+            System.out.println("验证码发送成功");
             System.out.println(result);
+            return Result.success("发送验证码成功");
         } catch (HTTPException | IOException e) {
-            throw new RuntimeException(e);
+
+            //throw new RuntimeException(e);
+            e.printStackTrace();
+            return Result.fail(ErrorCode.NETWORK_EXCEPTION.getCode(), ErrorCode.QUERY_RESULT_IS_EMPTY.getMsg());
+
         }
+
     }
 }

@@ -9,6 +9,7 @@ public enum ErrorCode {
 
     QUERY_RESULT_IS_EMPTY(3001, "查询结果不存在"),
     PARAMS_ERROR(3002,"参数错误"),
+    NETWORK_EXCEPTION(3003,"网络异常")
     ;
 
     private int code;
