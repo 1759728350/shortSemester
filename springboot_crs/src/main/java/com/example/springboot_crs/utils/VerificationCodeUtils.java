@@ -3,6 +3,9 @@ package com.example.springboot_crs.utils;
 import java.util.Random;
 
 public class VerificationCodeUtils {
+
+    public static String smsCode = "";
+
     /**
      * @description:  随机生成6位数字验证码
      * @param:  null
@@ -18,6 +21,7 @@ public class VerificationCodeUtils {
             code.append(random.nextInt(10));
         }
         System.out.println("生成验证码为: "+code.toString());
+        smsCode = code.toString();
         return code.toString();
     }
     public static void main(String[] args) {
