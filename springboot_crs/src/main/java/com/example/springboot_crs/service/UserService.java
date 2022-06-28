@@ -48,4 +48,14 @@ public class UserService {
         User user = userMapper.selectUserByPhone(phone);
         return user != null;
     }
+
+    public boolean updateUser(User user) {
+
+        return userMapper.updateUser(user);
+
+    }
+
+    public boolean updateUserVipLevel(String vipId, String userId) {
+        return userMapper.updateUserVipLevel(vipId,userId);
+    }
 }

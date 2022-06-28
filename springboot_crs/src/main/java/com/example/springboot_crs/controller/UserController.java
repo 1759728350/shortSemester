@@ -11,6 +11,7 @@ import com.example.springboot_crs.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 
@@ -30,7 +31,7 @@ public class UserController {
      * @date: 2022-06-24 14:56
      */
     @PostMapping("/login")
-    public Result login(@RequestBody User userInfo) {
+    public Result login(@RequestBody User userInfo, HttpSession session) {
         String account = userInfo.getUserAccount();
         String password = userInfo.getUserPassword();
         //判断账号密码是否为空
@@ -44,6 +45,8 @@ public class UserController {
         for (User user : userList) {
 
             if (user.getUserPassword().equals(password)) {
+                //session存储userId
+                session.setAttribute("userId",user.getUserId());
                 return Result.success(user);
             }
 
@@ -112,6 +115,35 @@ public class UserController {
         //验证码验证失败
         return Result.fail(ErrorCode.VERIFICATION_CODE_ERROR.getCode(), ErrorCode.VERIFICATION_CODE_ERROR.getMsg());
 
+    }
+    /**
+     * @description: 个人信息修改(修改用户个人信息)
+     * @param: 用户名,邮箱,地址,手机号
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-28 13:43
+     */
+    @PutMapping("/updateInfo")
+    public Result updateUser(@RequestBody User user,HttpSession session){
+        String userId = session.getAttribute("userId").toString();
+        System.out.println("获取的session userId为"+userId);
+        user.setUserId(userId);
+        boolean isOk = userService.updateUser(user);
+        if (isOk){
+            return Result.success(true);
+        }
+        return Result.fail(3000,"修改失败");
+    }
+
+    @PutMapping("/updateVipLevel")
+    public Result updateUserVipLevel(@RequestBody JSONObject jsonObject){
+        String vipId = jsonObject.getStr("vipId");
+        String userId = jsonObject.getStr("userId");
+        boolean isOk = userService.updateUserVipLevel(vipId,userId);
+        if (isOk){
+            return Result.success(true);
+        }
+        return Result.fail(3000,"修改失败");
     }
 
 }

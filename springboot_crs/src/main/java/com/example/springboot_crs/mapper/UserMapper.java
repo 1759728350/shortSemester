@@ -26,4 +26,17 @@ public interface UserMapper {
 
     @Select("select * from user where userPhone = #{phone}")
     User selectUserByPhone(String userPhone);
+
+    /**
+     * @description: 修改用户信息
+     * @author Hedley
+     * @date: 2022-06-28 14:32
+     * @problem: userPhone = #{userPhone}不需要user.userPhone
+     */
+    @Update("update user set userName = #{userName},userEmail = #{userEmail}," +
+            "userLoc = #{userLoc},userPhone = #{userPhone} where userId=#{userId}")
+    boolean updateUser(User user);
+
+    @Update("update user set vipId = #{vipId} where userId=#{userId}")
+    boolean updateUserVipLevel(@Param("vipId") String vipId,@Param("userId") String userId);
 }

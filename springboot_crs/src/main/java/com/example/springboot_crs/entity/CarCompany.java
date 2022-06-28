@@ -15,6 +15,7 @@ public class CarCompany {
     private String carCLoc;
     private String carCEmail;
     private String carPhone;
+    private String carCInfo;
 
 
     @Override
@@ -22,9 +23,10 @@ public class CarCompany {
         return "CarCompany{" +
                 "carCid='" + carCid + '\'' +
                 ", carCname='" + carCname + '\'' +
-                ", carLoc='" + carCLoc + '\'' +
-                ", carEmail='" + carCEmail + '\'' +
+                ", carCLoc='" + carCLoc + '\'' +
+                ", carCEmail='" + carCEmail + '\'' +
                 ", carPhone='" + carPhone + '\'' +
+                ", carCInfo='" + carCInfo + '\'' +
                 '}';
     }
 }
