@@ -134,7 +134,13 @@ public class UserController {
         }
         return Result.fail(3000,"修改失败");
     }
-
+    /**
+     * @description: 用户办理vip ,(修改用户表中vipId对应的等级)
+     * @param: [jsonObject]
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-28 14:57
+     */
     @PutMapping("/updateVipLevel")
     public Result updateUserVipLevel(@RequestBody JSONObject jsonObject){
         String vipId = jsonObject.getStr("vipId");
