@@ -22,4 +22,8 @@ public interface UserMapper {
     @Insert("insert into user (userId,userAccount,userPassword,userPhone) values (#{userId},#{userAccount},#{userPassword},#{userPhone})")
     boolean insertUser(@Param("userId")String userId,@Param("userAccount")String userAccount
             ,@Param("userPassword")String userPassword, @Param("userPhone")String userPhone);
+
+
+    @Select("select * from user where userPhone = #{phone}")
+    User selectUserByPhone(String userPhone);
 }

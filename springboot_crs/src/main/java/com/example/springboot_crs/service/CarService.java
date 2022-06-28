@@ -1,7 +1,8 @@
 package com.example.springboot_crs.service;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class CarService {
-    public static void main(String[] args) {
-        System.out.println("branch test");
-    }
+
 }

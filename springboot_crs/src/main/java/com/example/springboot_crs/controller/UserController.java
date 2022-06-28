@@ -1,6 +1,7 @@
 package com.example.springboot_crs.controller;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
 import com.example.springboot_crs.entity.User;
 import com.example.springboot_crs.service.UserService;
 import com.example.springboot_crs.utils.VerificationCodeUtils;
@@ -9,6 +10,7 @@ import com.example.springboot_crs.vo.Result;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 
@@ -21,7 +23,7 @@ public class UserController {
     private UserService userService;
 
     /**
-     * @description:
+     * @description: 使用账号密码与数据库校验
      * @param: [userVo]
      * @return: com.example.springboot_crs.entity.User
      * @author Hedley
@@ -47,37 +49,65 @@ public class UserController {
 
         }
         //null返回结果是1,因此用Result返回解决
-        return Result.fail(ErrorCode. QUERY_RESULT_IS_EMPTY.getCode(),
-                ErrorCode. QUERY_RESULT_IS_EMPTY.getMsg());
+        return Result.fail(ErrorCode.QUERY_RESULT_IS_EMPTY.getCode(),
+                ErrorCode.QUERY_RESULT_IS_EMPTY.getMsg());
     }
-    /** 
-     * @description:  
-     * @param:  
-     * @return:  
+
+    /**
+     * @description: 使用短信验证码和验证码进行校验
+     * @param: 电话,验证码
+     * @return:
+     * @author Hedley
+     * @date: 2022-06-27 17:00
+     */
+    @PostMapping("/loginByPhone")
+    public Result loginByPhone(@RequestBody JSONObject jsonObject) {
+        String userPhone = jsonObject.getStr("userPhone");
+        String code = jsonObject.getStr("code");
+
+        if (code.equals(VerificationCodeUtils.smsCode)){
+            User user = userService.selectUserByPhone(userPhone);
+            return Result.success(user);
+
+        }
+        return Result.fail(ErrorCode.VERIFICATION_CODE_ERROR.getCode(), ErrorCode.VERIFICATION_CODE_ERROR.getMsg());
+
+    }
+
+
+    /**
+     * @description: 使用账号, 密码, 和手机号, 验证码进行校验, 若校验账号和手机均为未注册, 则新增该用户账号
+     * @param: 账号, 密码, 电话, 验证码
+     * @return: boolean
      * @author Hedley
      * @date: 2022-06-27 14:58
-     */ 
+     */
     @PostMapping("/register")
-    public Result register(@RequestBody User user){
+    public Result register(@RequestBody User user) {
         String account = user.getUserAccount();
         String password = user.getUserPassword();
         String phone = user.getUserPhone();
         String code = user.getCode();
         //验证码验证
-        if (code.equals(VerificationCodeUtils.smsCode)){
+        if (code.equals(VerificationCodeUtils.smsCode)) {
             //账号是否已注册查询
             List<User> users = userService.selectUserByAccount(account);
-            if (users.isEmpty()){
+            if (users.isEmpty()) {
+                //该手机号是否已被注册
+                boolean isExist = userService.selectPhone(phone);
+                if (isExist){
+                    return Result.fail(3000,"该手机号已被注册");
+                }
                 //注册账号
                 boolean registerOk = userService.registerUserAccount(account, password, phone);
-                if (registerOk){
+                if (registerOk) {
                     return Result.success(true);
                 }
                 //数据库异常
                 return Result.fail(ErrorCode.DATABASE_SQL_ERROR.getCode(), ErrorCode.DATABASE_SQL_ERROR.getMsg());
 
             }
-            return Result.fail(3000,"账号已存在");
+            return Result.fail(3000, "账号已存在");
         }
         //验证码验证失败
         return Result.fail(ErrorCode.VERIFICATION_CODE_ERROR.getCode(), ErrorCode.VERIFICATION_CODE_ERROR.getMsg());
