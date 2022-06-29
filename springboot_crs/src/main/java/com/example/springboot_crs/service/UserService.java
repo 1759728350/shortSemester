@@ -1,5 +1,7 @@
 package com.example.springboot_crs.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.springboot_crs.entity.Car;
 import com.example.springboot_crs.entity.User;
 import com.example.springboot_crs.mapper.UserMapper;
 import com.example.springboot_crs.vo.Result;
@@ -58,4 +60,41 @@ public class UserService {
     public boolean updateUserVipLevel(String vipId, String userId) {
         return userMapper.updateUserVipLevel(vipId,userId);
     }
+
+    /** 
+     * @description: 查询所有用户给admin 
+     * @param:  
+     * @return:  
+     * @author Hedley
+     * @date: 2022-06-29 16:33
+     */ 
+    public List<User> selectAllUser() {
+
+        List<User> users = userMapper.selectList(null);
+        return users;
+    }
+    /**
+     * @description:  admin 增加用户
+     * @param:  user
+     * @return:
+     * @author Hedley
+     * @date: 2022-06-29 17:44
+     */
+    public boolean addUser(User user) {
+
+        //设置vip默认为0
+        user.setVipId("0");
+        int count = userMapper.insert(user);
+        return count == 1;
+
+    }
+
+    public boolean deleteUser(String userId) {
+        int count = userMapper.deleteById(userId);
+        return count == 1;
+    }
+
+    //update 放到了adminService中,以防与本身的userUpdate冲突
+
+
 }

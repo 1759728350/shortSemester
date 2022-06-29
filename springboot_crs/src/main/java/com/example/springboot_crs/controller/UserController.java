@@ -2,6 +2,7 @@ package com.example.springboot_crs.controller;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
+import com.example.springboot_crs.entity.Car;
 import com.example.springboot_crs.entity.User;
 import com.example.springboot_crs.service.UserService;
 import com.example.springboot_crs.utils.VerificationCodeUtils;
@@ -151,5 +152,6 @@ public class UserController {
         }
         return Result.fail(3000,"修改失败");
     }
+
 
 }

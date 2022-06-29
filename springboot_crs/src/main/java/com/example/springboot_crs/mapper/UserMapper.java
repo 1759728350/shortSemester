@@ -1,5 +1,7 @@
 package com.example.springboot_crs.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.example.springboot_crs.entity.Car;
 import com.example.springboot_crs.entity.User;
 import org.apache.ibatis.annotations.*;
 
@@ -7,7 +9,7 @@ import java.util.List;
 
 //声明是一个Mapper接口
 @Mapper
-public interface UserMapper {
+public interface UserMapper extends BaseMapper<User> {
 
 
     @Select("select * from user where userAccount = #{account}")
@@ -39,4 +41,6 @@ public interface UserMapper {
 
     @Update("update user set vipId = #{vipId} where userId=#{userId}")
     boolean updateUserVipLevel(@Param("vipId") String vipId,@Param("userId") String userId);
+
+
 }

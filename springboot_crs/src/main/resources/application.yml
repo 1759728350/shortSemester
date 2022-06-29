@@ -1,0 +1,7 @@
+#控制台打印sql
+mybatis-plus:
+  configuration:
+    #    设置日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    #设置取消字段驼峰转下划线
+    map-underscore-to-camel-case: false

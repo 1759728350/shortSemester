@@ -42,4 +42,36 @@ public class CarController {
         return Result.success(carList);
     }
 
+    /**
+     * @description: 用户新增个人所属车辆(新增car)
+     * @param: [car]
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-28 21:27
+     */
+    @PostMapping("/addCar")
+    public Result addCar(@RequestBody Car car){
+        boolean isOk = carService.addCar(car);
+        if (isOk){
+            return Result.success(true);
+        }
+        return Result.fail(3000,"增加失败");
+    }
+    /**
+     * @description: 用户移除个人车辆
+     * @param: [carId]
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-29 14:00
+     */
+    @DeleteMapping("/deleteCar")
+    public Result deleteCar(@RequestParam String carId){
+        boolean isOk = carService.deleteCar(carId);
+        if (isOk){
+            return Result.success(true);
+        }
+        return Result.fail(3000,"删除失败");
+
+    }
+
 }
