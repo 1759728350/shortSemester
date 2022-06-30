@@ -8,7 +8,7 @@
           </div>
           <div class="tab">
             <router-link to="#" class="a"
-              >App下载 <i class="el-icon-mobile-phone"></i
+              >App下载</i
             ></router-link>
           </div>
           <div class="Loc">
@@ -35,34 +35,40 @@
             </div>
           </template>
           <template v-if="isLogin">
-            <div class="tab a">欢迎您!用户{{ user }}</div>
+            <div class="tab a">
+              欢迎您!{{ userName == null ? "新用户" : userName }}
+            </div>
           </template>
           <div class="tab">
             <router-link to="/adminLogin" class="a">切换至管理员</router-link>
           </div>
           <div class="tab">
-            <el-dropdown>
+            <el-dropdown @command="handleUser">
               <span class="el-dropdown-link a">
                 个人中心<i class="el-icon-arrow-down el-icon--right"></i>
               </span>
               <el-dropdown-menu slot="dropdown" lass="dropdown">
-                <div><el-dropdown-item>个人信息</el-dropdown-item></div>
-                <div><el-dropdown-item>我的收藏</el-dropdown-item></div>
-                <div><el-dropdown-item>我的消息</el-dropdown-item></div>
-                <div><el-dropdown-item>我的爱车</el-dropdown-item></div>
-                 <div><el-dropdown-item>退出登录</el-dropdown-item></div>
+                <div>
+                  <el-dropdown-item command="1">个人信息</el-dropdown-item>
+                </div>
+                <div>
+                  <el-dropdown-item command="2">我的爱车</el-dropdown-item>
+                </div>
+                <div>
+                  <el-dropdown-item command="0">退出登录</el-dropdown-item>
+                </div>
               </el-dropdown-menu>
             </el-dropdown>
           </div>
           <div class="tab">
-            <el-dropdown>
+            <el-dropdown @command="handleVip">
               <span class="el-dropdown-link a">
                 VIP中心<i class="el-icon-arrow-down el-icon--right"></i>
               </span>
               <el-dropdown-menu slot="dropdown" class="dropdown">
-                <div><el-dropdown-item>我的VIP</el-dropdown-item></div>
-                <div><el-dropdown-item>升级VIP</el-dropdown-item></div>
-                <div><el-dropdown-item>VIP特惠</el-dropdown-item></div>
+                <div>
+                  <el-dropdown-item command="1">我的VIP</el-dropdown-item>
+                </div>
               </el-dropdown-menu>
             </el-dropdown>
           </div>
@@ -82,14 +88,22 @@
               <div class="block">
                 <el-carousel height="150px" indicator-position="outside">
                   <el-carousel-item v-for="item in blockImg" :key="item.id">
-                    <el-image :src="item.url" style="width:100%;height:100%"></el-image>
+                    <el-image
+                      :src="item.url"
+                      style="width: 100%; height: 100%"
+                    ></el-image>
                   </el-carousel-item>
                 </el-carousel>
               </div>
               <div class="companyRank">
-                <h2 class="orange">{{location}}热门车管公司</h2>
+                <h2 class="orange">{{ location }}热门车管公司</h2>
+                <el-empty
+                  description="没有找到相关信息"
+                  v-if="isShow"
+                ></el-empty>
                 <el-menu-item
-                  v-for="item in company.slice(
+                  v-if="!isShow"
+                  v-for="(item, index) in companyList.slice(
                     (this.currentPage - 1) * 4,
                     this.currentPage * 4
                   )"
@@ -97,7 +111,7 @@
                   @click="selectCompany(item.id)"
                 >
                   <div class="rank">
-                    <div class="orange">{{ item.id }}</div>
+                    <div class="orange">{{ index + 1 }}</div>
                   </div>
                   <div class="img">
                     <img
@@ -106,8 +120,8 @@
                     />
                   </div>
                   <div class="imgText">
-                    <div>铁岭市客运集团</div>
-                    <div class="gray">铁岭</div>
+                    <div>{{ item.carCname }}</div>
+                    <div class="gray">{{ location }}</div>
                   </div>
                 </el-menu-item>
                 <div class="changePage">
@@ -118,7 +132,7 @@
                     @current-change="handleCurrentChange"
                     :page-size="4"
                     :current-page="currentPage"
-                    :total="this.company.length"
+                    :total="this.companyList.length"
                     :pager-count="5"
                   >
                   </el-pagination>
@@ -164,16 +178,16 @@
           <div class="tableTab">
             <div class="oneTab">
               <span>汽车所属类型:&emsp;</span>
-              <el-radio v-model="carType" label="people">
-                <span> 个人</span></el-radio
-              >
-              <el-radio v-model="carType" label="carCompany">
-                <span>汽车中介公司</span>
-              </el-radio>
+              <el-radio-group v-model="carType" @change="changeType()">
+                <el-radio label="people"> <span> 个人</span></el-radio>
+                <el-radio v-model="carType" label="carCompany">
+                  <span>汽车中介公司</span>
+                </el-radio>
+              </el-radio-group>
             </div>
             <div class="twoTab">
-              <span @click="getCityIndex()">服务区域:&emsp;</span>
-              <el-radio-group v-model="location">
+              <span>服务区域:&emsp;</span>
+              <el-radio-group v-model="location" @change="changeCity()">
                 <el-radio-button
                   :label="city"
                   v-for="city in mycity"
@@ -182,69 +196,124 @@
             </div>
           </div>
           <div class="table">
-              <div class="card" v-for="card in 6">
-                <div class="leftImg" :style="[{background:'url('+example+')'},{backgroundSize: '100% 100%'}]">
-                      
+            <el-empty
+              description="没有找到相关车辆信息"
+              v-if="showCar"
+            ></el-empty>
+            <div class="card" v-for="card in carList" v-if="!showCar">
+              <div
+                class="leftImg"
+                :style="[
+                  { background: 'url(' + card.carImg + ')' },
+                  { backgroundSize: 'cover' },
+                  { marginLeft: '25px' },
+                ]"
+              ></div>
+              <div class="rightText">
+                <div class="Text">
+                  <h1>{{ card.carInfo }}</h1>
+                  <div>{{ card.carModel }}</div>
+                  <div>
+                    <el-tag>租借金额{{ card.leaseAmount }}元起</el-tag>
+                    &emsp;
+                    <el-tag>已行驶{{ card.mileage }}公里</el-tag>
+                    &emsp;
+                    <el-tag>{{ card.carBrand }}品牌</el-tag>
+                  </div>
                 </div>
-                <div class="rightText">
-                  <div class="Text">
-                    <h1>主题</h1>
-                    <div>信息</div>
-                    <div>
-                      <el-tag>标签1</el-tag>
-                      &emsp;
-                      <el-tag>标签2</el-tag>
-                      &emsp;
-                      <el-tag>标签3</el-tag>
-                    </div>
-                  </div>
-                  <div class="operate">
-                    <el-button type="primary">租借汽车</el-button>
-                    <el-button type="info">联系商家</el-button>
-                    <el-button type="danger" icon="el-icon-star-off">收藏</el-button>
-                  </div>
+                <div class="operate">
+                  <el-button type="primary" @click="detail(card)"
+                    >详情信息</el-button
+                  >
+                  <el-button type="info" @click="connect()">联系商家</el-button>
+                  <el-button type="danger" @click="zujie(card)">租借汽车</el-button>
                 </div>
               </div>
+            </div>
           </div>
         </el-main>
       </el-container>
     </el-container>
+    <el-dialog title="用户个人信息" :visible.sync="userDialog">
+      <el-form :model="form" label-position="left">
+        <el-form-item label="用户名称" label-width="90px">
+          <el-input v-model="form.userName"></el-input>
+        </el-form-item>
+        <el-form-item label="用户邮箱" label-width="90px">
+          <el-input v-model="form.userEmail"></el-input>
+        </el-form-item>
+        <el-form-item label="用户手机" label-width="90px">
+          <el-input v-model="form.userPhone"></el-input>
+        </el-form-item>
+        <el-form-item label="用户所在地" label-width="90px">
+          <el-select v-model="form.userLoc" placeholder="请选择区域">
+            <el-option
+              :label="loc"
+              :value="loc"
+              v-for="loc in mycity"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="userDialog = false">取 消</el-button>
+        <el-button type="primary" @click="putUser()">确 定</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog
+      title="VIP办理"
+      :visible.sync="getVip"
+      width="30%"
+    >
+    <div>我的VIP:&nbsp;
+  <el-radio v-model="vipLevel" label="0">普通会员</el-radio>
+  <el-radio v-model="vipLevel" label="1">VIP(18元/月)</el-radio>
+  <el-radio v-model="vipLevel" label="2">SVIP(30元/月)</el-radio>
+   </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="getVip = false">取 消</el-button>
+        <el-button type="primary" @click="updateVIP()"
+          >办 理</el-button
+        >
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import axios from "axios";
 export default {
   name: "index",
   data() {
     return {
-      user: "富贵",
-      userId:"",
+      userName: "",
+      userId: "",
+      city: [],
+      //main中展示汽车的boolean
+      showCar: false,
       isLogin: false,
-      company: [
-        {
-          id: "1",
-        },
-        {
-          id: "2",
-        },
-        {
-          id: "3",
-        },
-        {
-          id: "4",
-        },
-        {
-          id: "5",
-        },
-      ],
+      userDialog: false,
+      getVip:false,
+      vipLevel:"",
+      form: {
+        userId: "",
+        userName: "",
+        userEmail: "",
+        userLoc: "",
+        userPhone: "",
+      },
       //默认服务区域
-      example:"https://cube.elemecdn.com/6/94/4d3ea53c084bad6931a56d5158a48jpeg.jpeg",
+      example:
+        "https://dss0.bdstatic.com/-0U0bnSm1A5BphGlnYG/tam-ogel/-912671055_-1201020382_360_212.png",
       location: "",
       carType: "people",
       currentPage: 1,
       find: "",
       myprovince: "北京",
       mycity: [],
+      isShow: false,
+      companyList: [],
+      carList: [],
       cityList: [
         { province: "北京", city: ["北京市"] },
         { province: "天津", city: ["天津市"] },
@@ -752,30 +821,136 @@ export default {
         { province: "澳门特别行政区", city: ["澳门", "离岛"] },
       ],
       //轮播图
-      blockImg:[
+      blockImg: [
         {
-          id:"1",
-           url:"https://pic1.58cdn.com.cn/p1/big/n_v29a5fa4945a0849738f9ee2943f5f5c97.jpg?w=330&h=248"
-        },{
-          id:"2",
-          url:"https://pic5.58cdn.com.cn/p1/big/n_v249f06bbb83c54e6d8e6805030140cc18.jpg?w=330&h=248"
-        },{
-          id:"3",
-          url:"https://pic1.58cdn.com.cn/pic/big/n_v230b233c1acc147bcbdb0eee131d3713e.jpg?w=338&h=253"
-        },{
-          id:"4",
-           url:"https://pic1.58cdn.com.cn/p1/big/n_v246fe3c13086845989601bca68da39c68.png?w=294&h=220"
-        },{
-          id:"5",
-          url:"https://pic6.58cdn.com.cn/p1/big/n_v210d1957ddbaa439d9e45a899ef3f0a85.png?w=294&h=220"
-        } 
-      ]
+          id: "1",
+          url: "https://pic1.58cdn.com.cn/p1/big/n_v29a5fa4945a0849738f9ee2943f5f5c97.jpg?w=330&h=248",
+        },
+        {
+          id: "2",
+          url: "https://pic5.58cdn.com.cn/p1/big/n_v249f06bbb83c54e6d8e6805030140cc18.jpg?w=330&h=248",
+        },
+        {
+          id: "3",
+          url: "https://pic1.58cdn.com.cn/pic/big/n_v230b233c1acc147bcbdb0eee131d3713e.jpg?w=338&h=253",
+        },
+        {
+          id: "4",
+          url: "https://pic1.58cdn.com.cn/p1/big/n_v246fe3c13086845989601bca68da39c68.png?w=294&h=220",
+        },
+        {
+          id: "5",
+          url: "https://pic6.58cdn.com.cn/p1/big/n_v210d1957ddbaa439d9e45a899ef3f0a85.png?w=294&h=220",
+        },
+      ],
     };
   },
   mounted() {
+    this.getUserInfo();
     this.getMyCity();
   },
   methods: {
+    //租借
+    zujie(car){
+      this.$message.warning("请确认车辆信息")
+      if (this.loginFilter()) {
+        this.loginJump();
+      } else {
+        let mycar = JSON.stringify(car);
+        this.$router.push({
+          path: "/detail",
+          query: {
+            thisCar: mycar,
+          },
+        });
+      }
+    },
+    //跳转到我的爱车
+    GotoMyCar(){
+      if(this.loginFilter()){
+        this.loginJump()
+      }else{
+        this.$router.push({
+          path:"/myCar"
+        })
+      }
+    },
+    //点击联系方式
+    connect(){
+      this.$notify({
+          title: '联系方式',
+          message: '电话:15042070108'
+        });
+    },
+    //升级vip
+    updateVIP(){
+      axios.put("http://localhost:8000/user/updateVipLevel",{
+        vipId:this.vipLevel,
+        userId:this.userId
+      }).then(res=>{
+        this.getUser()
+        this.$message.success("受理成功!")
+      }).catch(err=>{
+         this.$message.error("受理失败!,请检查余额")
+      })
+      this.getVip = false;
+    },
+    //详情动态路由跳转
+    detail(car) {
+      if (this.loginFilter()) {
+        this.loginJump();
+      } else {
+        let mycar = JSON.stringify(car);
+        this.$router.push({
+          path: "/detail",
+          query: {
+            thisCar: mycar,
+          },
+        });
+      }
+    },
+
+    //vip下拉菜单
+    handleVip(command) {
+      if(this.loginFilter()){
+        this.loginJump()
+      }else{
+         if(command==1){
+         this.vipLevel = JSON.parse(localStorage.user).vipId==null?"0":JSON.parse(localStorage.user).vipId;
+         this.getVip = true
+         }
+      }
+    },
+    //修改用户信息
+    putUser() {
+      axios
+        .put(`http://localhost:8000/user/updateInfo`, this.form)
+        .then((res) => {
+          this.getUser();
+          this.$message.success("修改成功!");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      this.userDialog = false;
+    },
+    //axios请求用户信息并替换掉本地存储
+    getUser() {
+      let accout = JSON.parse(localStorage.user).userAccount;
+      let pwd = JSON.parse(localStorage.user).userPassword;
+      axios
+        .post("http://localhost:8000/user/login", {
+          userAccount: accout,
+          userPassword: pwd,
+        })
+        .then((res) => {
+          localStorage.user = JSON.stringify(res.data.data);
+          this.getUserInfo();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
     //左侧导航栏切换
     handleOpen(key, keyPath) {
       console.log(key, keyPath);
@@ -784,13 +959,58 @@ export default {
     handleClose(key, keyPath) {
       console.log(key, keyPath);
     },
-    selectCompany(id) {
-      console.log(id);
+    //修改城市
+    changeCity() {
+      this.getCarAndCarCompanyInfo();
+    },
+    //切换汽车所属类型
+    changeType() {
+      this.getCarAndCarCompanyInfo();
+    },
+    //获取当前城市所有租借车辆和汽车公司信息
+    getCarAndCarCompanyInfo() {
+      //获取汽车公司信息
+      axios
+        .get(`http://localhost:8000/company/city?myCity=${this.location}`)
+        .then((res) => {
+          if (res.data.data.length != 0) {
+            this.companyList = res.data.data;
+            this.isShow = false;
+          } else {
+            //如果没数据
+            this.isShow = true;
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      //获取租借汽车信息
+      let type = this.carType == "people" ? 0 : 1;
+      axios
+        .get(
+          `http://localhost:8000/car/cityAndCarType?myCity=${this.location}&carType=${type}`
+        )
+        .then((res) => {
+          if (res.data.data.length == 0) {
+            this.showCar = true;
+          } else {
+            this.carList = res.data.data;
+            this.carList = this.carList.filter((item) => {
+              return item.state == 1;
+            });
+            this.showCar = false;
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
     handleCurrentChange(val) {
       this.currentPage = val;
       console.log(`当前页: ${val}`);
     },
+    //通过省默认获得第一个市信息(包括汽车和汽车公司信息)
     getMyCity() {
       this.cityList.forEach((city) => {
         if (city.province == this.myprovince) {
@@ -798,6 +1018,29 @@ export default {
         }
         this.location = this.mycity[0];
       });
+      this.getCarAndCarCompanyInfo();
+    },
+    handleUser(command) {
+      if (command == 0) {
+        this.quitLogin();
+      }
+      if (command == 1) {
+        this.changeUserInfo();
+      }
+      if (command == 2){
+        this.GotoMyCar()
+      }
+    },
+    //获取用户信息
+    getUserInfo() {
+      let temp = localStorage.user;
+      if (temp != null && temp != undefined) {
+        this.userId = JSON.parse(localStorage.user).userId;
+        this.userName = JSON.parse(localStorage.user).userName;
+        this.isLogin = true;
+      } else {
+        this.isLogin = false;
+      }
     },
     //切换省份
     changeProvice(command) {
@@ -805,9 +1048,44 @@ export default {
       this.getMyCity();
     },
     //查找方法
-    search(){
-      alert("查找方法")
-    }
+    search() {
+      alert("查找方法");
+    },
+    //退出登录
+    quitLogin() {
+      (this.userId = ""), (this.userName = ""), localStorage.clear();
+      this.isLogin = false;
+      this.$message.warning("已登出")
+    },
+    //用户修改个人信息
+    changeUserInfo() {
+      if (this.loginFilter()) {
+        this.loginJump();
+      } else {
+        this.userDialog = true;
+        let user = JSON.parse(localStorage.user);
+        this.form.userId = user.userId;
+        this.form.userName = user.userName;
+        this.form.userEmail = user.userEmail;
+        this.form.userPhone = user.userPhone;
+        this.form.userLoc = user.userLoc;
+      }
+    },
+    //登录拦截器
+    loginFilter() {
+      if (this.userId.length != 0) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    //登录路由跳转
+    loginJump() {
+      this.$message.error("您还未登录,请先登录");
+      this.$router.push({
+        path: "/login",
+      });
+    },
   },
 };
 </script>
@@ -1013,28 +1291,28 @@ export default {
   font-size: 12px;
   font-weight: bold;
 }
-.card{
+.card {
   width: 100%;
   height: 35%;
-  margin-bottom: .5%;
+  margin-bottom: 0.5%;
   display: flex;
   background-color: rgb(245, 245, 245);
 }
-.card:hover{
-  background-color: rgba(204, 204, 204,.8);
+.card:hover {
+  background-color: rgba(204, 204, 204, 0.8);
 }
-.leftImg{
+.leftImg {
   width: 25%;
   height: 100%;
 }
-.rightText{
+.rightText {
   width: 75%;
   height: 100%;
   display: flex;
   justify-content: space-between;
   align-content: center;
 }
-.Text{
+.Text {
   width: 70%;
   height: 100%;
   display: flex;
@@ -1042,7 +1320,7 @@ export default {
   align-content: space-around;
   flex-wrap: wrap;
 }
-.operate{
+.operate {
   width: 30%;
   height: 100%;
   display: flex;
@@ -1050,11 +1328,11 @@ export default {
   justify-content: center;
   flex-wrap: wrap;
 }
-.Text>h1{
+.Text > h1 {
   width: 75%;
   height: 30%;
 }
-.Text>div{
+.Text > div {
   width: 75%;
   height: 18%;
 }

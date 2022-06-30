@@ -27,6 +27,7 @@ const routes = [
   {
     path:"/adminHome",
     name:"adminHome",
+    redirect:"/user",
     component: ()=> import("../components/Home.vue"),
     children:[
       {
@@ -46,7 +47,16 @@ const routes = [
       }
     ]
   },
-  
+  {
+    path:"/detail",
+    name:"detail",
+    component:() => import("../views/Detail.vue")
+  },
+  {
+    path:"/myCar",
+    name:"myCar",
+    component:() => import("../views/MyCar.vue")
+  }
 ]
 
 const router = new VueRouter({

@@ -48,7 +48,7 @@
       <div class="top">
         <el-dropdown trigger="click" class="pos" @command="adminQuit">
           <span class="el-dropdown-link font"> 
-            admin1
+            管理员
             <i class="el-icon-arrow-down el-icon--right"></i>
           </span>
           <el-dropdown-menu>
