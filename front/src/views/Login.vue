@@ -31,7 +31,7 @@
                   <el-input v-model="user.PassWord" placeholder="请输入密码(6-18位数字,英文字母组合)" type="password" :clearable="true"></el-input>
                   </div>
                 </el-form-item>
-                <div><el-button type="primary" class="button">登 &emsp;录</el-button></div>
+                <div><el-button type="primary" class="button" @click="login()">登 &emsp;录</el-button></div>
                 <div class="lostPWD">忘记密码?点击此处</div>
               </el-form>
             </el-tab-pane>
@@ -54,7 +54,7 @@
                   <el-input v-model="user.code" placeholder="请输入六位验证码" type="password" :clearable="true" ></el-input>
                   </div>
                 </el-form-item>
-                <div><el-button type="primary" class="button" @click="login()">登 &emsp;录</el-button></div>
+                <div><el-button type="primary" class="button" @click="loginByphone()">登 &emsp;录</el-button></div>
               </el-form>
             </el-tab-pane>
           </el-tabs>
@@ -73,6 +73,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: "login",
   data() {
@@ -82,7 +83,8 @@ export default {
           Account: '',
           PassWord: '',
           Phone:"",
-        },
+          code:""
+        }, 
       disabled:false,
       time:0
     };
@@ -91,12 +93,66 @@ export default {
     handleClick() {
       this.activeName = "second";
     },
+    //账号密码登录
     login(){
+        if((this.user.Account.length>=6&&this.user.Account.length<=12)&&(this.user.PassWord.length>=6&&this.user.PassWord.length<=12)){
+            axios.post("http://localhost:8000/user/login",{
+              userAccount:this.user.Account,
+              userPassword:this.user.PassWord
+            }).then(res=>{
+                if(res.data.code==200){
+                  this.$message.success('登录成功!');
+                  localStorage.user = JSON.stringify(res.data.data);
+                  this.$router.push({
+                    path:"/"
+                  })
+                }else{
+                   this.$message.error('账号或密码错误');
+                }
+            }).catch(err=>{
 
+            })
+        }else{
+            this.$message.error('请输入正确格式的账号密码');
+        }
+    },
+    //通过手机登录
+    loginByphone(){
+       if(this.user.Phone.length==11&&this.user.code.length==6){
+          axios.post("http://localhost:8000/user/loginByPhone",{
+            userPhone:this.user.Phone,
+            code:this.user.code
+          }).then(res=>{
+            if(res.data.code==200){
+                  this.$message.success('登录成功!');
+                  localStorage.user = JSON.stringify(res.data.data);
+                  this.$router.push({
+                    path:"/"
+                  })
+                }else{
+                   this.$message.error('未查找到该用户!,请先注册');
+                }
+          }).catch(err=>{
+            this.$message.error('验证码错误!');
+          })
+       }else{
+        this.$message.error('验证码应为6位数字');
+       }
     },
     //发送短信
     sell(){
-      this.buttonTimeout()
+      if(this.user.Phone.length==11){
+           this.buttonTimeout();
+           axios.post("http://localhost:8000/sms/sendCode",{
+            phoneNum:this.user.Phone
+           }).then(res=>{
+              console.log(res.data)
+           }).catch(err=>{
+              this.$message.error("验证码数量达到上限!")
+           })
+      }else{
+         this.$message.error('请输入11位正确格式手机号');
+      }
     },
     //按钮计时器
     buttonTimeout(){
@@ -105,7 +161,6 @@ export default {
       let timeOut = () => { setTimeout(()=>{
         if(this.time!=0){
           this.time--;
-          console.log(this.time)
           timeOut()
         }else{
           this.disabled = false;

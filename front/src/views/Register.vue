@@ -62,6 +62,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: "Riegster",
   data() {
@@ -82,11 +83,42 @@ export default {
       this.activeName = "first";
     },
     register(){
-
+      if((this.user.Account.length>=6&&this.user.Account.length<=12)&&(this.user.PassWord.length>=6&&this.user.PassWord.length<=12)&&(this.user.code.length==6)){
+          axios.post("http://localhost:8000/user/register",{
+            userAccount:this.user.Account,
+            userPassword:this.user.PassWord,
+            userPhone:this.user.Phone,
+            code:this.user.code
+          }).then(res=>{
+            if(res.data.success){
+               this.$message.success("注册成功!正在跳转到登录页")
+               this.$router.push({
+                path:"/login"
+               })
+            }else{
+               this.$message.error(res.data.msg)
+            }
+          }).catch(err=>{
+            this.$message.error("请检查手机号是否正确")
+          })
+      }else{
+        this.$message.error("请按照规定格式输入账号密码以及验证码")
+      }
     },
     //发送短信
     sell(){
-      this.buttonTimeout()
+      if(this.user.Phone.length==11){
+           this.buttonTimeout();
+           axios.post("http://localhost:8000/sms/sendCode",{
+            phoneNum:this.user.Phone
+           }).then(res=>{
+              console.log(res.data)
+           }).catch(err=>{
+              this.$message.error("验证码数量达到上限!")
+           })
+      }else{
+         this.$message.error('请输入11位正确格式手机号');
+      }
     },
     //按钮计时器
     buttonTimeout(){
@@ -95,7 +127,6 @@ export default {
       let timeOut = () => { setTimeout(()=>{
         if(this.time!=0){
           this.time--;
-          console.log(this.time)
           timeOut()
         }else{
           this.disabled = false;

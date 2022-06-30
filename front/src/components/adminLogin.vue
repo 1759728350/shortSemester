@@ -47,7 +47,23 @@ export default {
   },
   methods: {
     submit() {
-      
+      axios.post("http://localhost:8000/admin/adminLogin",{
+        adminAccount:this.adminName,
+        adminPassword:this.adminPassword
+      }).then(res=>{
+        if(res.data.success){
+          this.$message.success("登录成功!")
+          this.$router.push({
+            path:"/adminHome"
+          })
+        }else{
+          this.$message.error("账号密码错误!")
+        }
+        
+      }).catch(err=>{
+        this.$message.error("请求错误!")
+        console.log(err)
+      })
     },
   },
 };

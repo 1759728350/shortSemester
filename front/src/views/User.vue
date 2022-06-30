@@ -23,13 +23,17 @@
       </div>
       <el-table :data="showData" stripe style="width: 100%">
         <el-table-column
-          prop="id"
+          prop="userId"
           label="用户编号"
           width="180"
         ></el-table-column>
-        <el-table-column prop="username" label="用户名"> </el-table-column>
-        <el-table-column prop="password" label="用户密码" width="180">
+        <el-table-column prop="userName" label="用户名"> </el-table-column>
+        <el-table-column prop="userPassword" label="用户密码" >
         </el-table-column>
+        <el-table-column prop="userAccount" label="用户账号"> </el-table-column>
+        <el-table-column prop="userLoc" label="用户所在地"> </el-table-column>
+        <el-table-column prop="userEmail" label="用户邮箱"> </el-table-column>
+        <el-table-column prop="userPhone" label="用户手机"> </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button size="mini" @click="handleEdit(scope.$index, scope.row)"
@@ -66,14 +70,27 @@
     >
         <el-form ref="form" :model="form" label-width="80px">
         <el-form-item label="用户id">
-          <el-input v-model="form.id"></el-input>
+          <el-input v-model="form.userid"></el-input>
         </el-form-item>
         </el-form-item>
         <el-form-item label="用户账号">
-          <el-input v-model="form.username"></el-input>
+          <el-input v-model="form.userAccount"></el-input>
         </el-form-item>
         <el-form-item label="用户密码">
-          <el-input v-model="form.password"></el-input>
+          <el-input v-model="form.userPassword"></el-input>
+        </el-form-item>
+        <el-form-item label="用户地址">
+          <el-input v-model="form.userLoc"></el-input>
+        </el-form-item>
+        <el-form-item label="用户邮箱">
+          <el-input v-model="form.userEmail"></el-input>
+        </el-form-item>
+          <el-form-item label="用户名">
+          <el-input v-model="form.userName"></el-input>
+        </el-form-item>
+        </el-form-item>
+          <el-form-item label="用户手机">
+          <el-input v-model="form.userPhone"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -87,16 +104,29 @@
       width="30%"
       :before-close="handleClose"
     >
-      <el-form ref="form" :model="form" label-width="80px">
+       <el-form ref="form" :model="form" label-width="80px">
         <el-form-item label="用户id">
-          <el-input v-model="form.id"></el-input>
+          <el-input v-model="form.userId"></el-input>
         </el-form-item>
         </el-form-item>
         <el-form-item label="用户账号">
-          <el-input v-model="form.username"></el-input>
+          <el-input v-model="form.userAccount"></el-input>
         </el-form-item>
         <el-form-item label="用户密码">
-          <el-input v-model="form.password"></el-input>
+          <el-input v-model="form.userPassword"></el-input>
+        </el-form-item>
+        <el-form-item label="用户地址">
+          <el-input v-model="form.userLoc"></el-input>
+        </el-form-item>
+        <el-form-item label="用户邮箱">
+          <el-input v-model="form.userEmail"></el-input>
+        </el-form-item>
+          <el-form-item label="用户名">
+          <el-input v-model="form.userName"></el-input>
+        </el-form-item>
+        </el-form-item>
+          <el-form-item label="用户手机">
+          <el-input v-model="form.userPhone"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -115,71 +145,87 @@ export default {
     return {
       search: "",
       dialogVisible: false,
-      dialogVisible2:false,
-      length:0,
+      dialogVisible2: false,
+      length: 0,
       showData: [],
       currentPage: 1,
       carData: [],
       price: "",
       user: [],
-      carid:"",
+      carid: "",
       form: {
-        id:"",
-        username:"",
-        password:""
+        userId:"",
+        userAccount:"",
+        userPassword:"",
+        userLoc:"",
+        userEmail:"",
+        userName:"",
+        userPhone:"",
+        vipId:""
       },
     };
   },
   mounted() {
-    // this.getUser();
+    this.getUser();
   },
   methods: {
-    close(type){
-      if(type==1){
-        this.dialogVisible = false
-      }else{
-        this.dialogVisible2 = false
+    close(type) {
+      if (type == 1) {
+        this.dialogVisible = false;
+      } else {
+        this.dialogVisible2 = false;
       }
-      for(let i in this.form){
-           if(i!="isziti"){
-              this.form[i] = ""
-           }else{
-             this.form[i] = false
-           }
+      for (let i in this.form) {
+        if (i != "isziti") {
+          this.form[i] = "";
+        } else {
+          this.form[i] = false;
         }
+      }
     },
-    putData(){
-        axios.put(`http://localhost:3000/account/${this.form.id}`,this.form).then(res=>{
-         this.getUser()
-         this.dialogVisible2 = false
-         for(let i in this.form){
-              this.form[i] = ""
-         }
-          this.$message({
+    //更新用户
+    putData() {
+      if(this.form.vipId==""){
+        this.form.vipId="0";
+      }
+      axios
+        .put(`http://localhost:8000/admin/updateUser`,this.form)
+        .then((res) => {
+          this.getUser();
+          this.dialogVisible2 = false;
+           this.$message({
             message: "修改成功",
             type: "success",
           });
-      }).catch(err=>{
-           this.$message({
+          for (let i in this.form) {
+            this.form[i] = "";
+          }
+        })
+        .catch((err) => {
+          this.$message({
             message: "修改失败",
             type: "error",
           });
-      })
+        });
     },
-    changeCurrent(val){
-      this.currentPage = val
-      this.showData = this.user.slice((this.currentPage-1)*5,this.currentPage*5)
+    changeCurrent(val) {
+      this.currentPage = val;
+      this.showData = this.user.slice(
+        (this.currentPage - 1) * 5,
+        this.currentPage * 5
+      );
     },
+    //新增用户
     postData() {
       axios
-        .post(`http://localhost:3000/account`, this.form)
+        .post(`http://localhost:8000/admin/addUser`,this.form)
         .then((res) => {
           //成功,置空所有form中的key值
           for (let i in this.form) {
-              this.form[i] = "";
+            this.form[i] = "";
           }
-          this.getUser()
-          this.dialogVisible = false
+          this.getUser();
+          this.dialogVisible = false;
           this.$message({
             message: "新增成功",
             type: "success",
@@ -192,52 +238,66 @@ export default {
           });
         });
     },
+    //获得所有用户信息
     getUser() {
       axios
-        .get(`http://localhost:3000/account`)
+        .get(`http://localhost:8000/admin/selectAllUser`)
         .then((res) => {
-          this.user = res.data;
-          this.showData = this.user.slice(0,5)
-          this.length = this.user.length
+          console.log(res.data.data);
+          this.user = res.data.data;
+          this.showData = this.user.slice(0, 5);
+          this.length = this.user.length;
         })
         .catch((err) => {
           console.log(err);
         });
     },
+    //编辑
     handleEdit(index, row) {
-      this.dialogVisible2 = true
-      for(let i in this.form){
-        this.form[i] = row[i]
+      this.dialogVisible2 = true;
+      for (let i in this.form) {
+        this.form[i] = row[i];
       }
-      this.carid = row.id
+      this.carid = row.id;
     },
     //删除用户
     handleDelete(index, row) {
-      axios.delete(`http://localhost:3000/account/${row.id}`).then(res=>{
-         this.getUser()
+      console.log(row.userId)
+      axios
+        .delete(`http://localhost:8000/admin/deleteUser?userId=${row.userId}`)
+        .then((res) => {
+          this.getUser();
+          this.currentPage = 1;
           this.$message({
             message: "删除成功",
             type: "success",
           });
-      }).catch(ERR=>{
-           this.getAlldata();
+        })
+        .catch((ERR) => {
+          
           this.$message({
             message: "删除失败",
             type: "error",
           });
-      })
+        });
     },
     handleSizeChange() {},
 
     //分页触发
-    next(){
-      this.currentPage++
-      this.showData = this.user.slice((this.currentPage-1)*5,this.currentPage*5)
+    next() {
+      this.currentPage++;
+      this.showData = this.user.slice(
+        (this.currentPage - 1) * 5,
+        this.currentPage * 5
+      );
     },
     //前一页
-    prev(){
-      this.currentPage--
-      this.showData = this.user.slice((this.currentPage-1)*5,this.currentPage*5)
+    prev() {
+      this.currentPage--;
+      this.showData = this.user.slice(
+        (this.currentPage - 1) * 5,
+        this.currentPage * 5
+      );
     },
     //关闭之前
     handleClose(done) {
@@ -249,12 +309,12 @@ export default {
     },
     //根据名字搜索
     find() {
-      this.showData = this.user.filter(item=>{
-        return item.username.indexOf(this.search)!=-1
-      })
-      this.length = this.showData.length
-      if(this.showData.length>5){
-        this.showData = this.showData.slice(0,5)
+      this.showData = this.user.filter((item) => {
+        return item.userName.indexOf(this.search) != -1;
+      });
+      this.length = this.showData.length;
+      if (this.showData.length > 5) {
+        this.showData = this.showData.slice(0, 5);
       }
     },
   },
@@ -268,7 +328,6 @@ export default {
 .body2 {
   width: 100%;
   height: 100%;
-
 }
 .box-card {
   width: 100%;
