@@ -17,4 +17,19 @@ public class CompanyService {
         List<CarCompany> carCompanyList = companyMapper.selectCompanyByCity(city);
         return carCompanyList;
     }
+
+    public List<CarCompany> selectAllCompany() {
+        List<CarCompany> carCompanyList = companyMapper.selectList(null);
+        return carCompanyList;
+    }
+
+    public boolean addCompany(CarCompany carCompany) {
+        int insert = companyMapper.insert(carCompany);
+        return insert == 1;
+    }
+
+    public boolean deleteCompany(String companyId) {
+        int delete = companyMapper.deleteById(companyId);
+        return delete == 1;
+    }
 }

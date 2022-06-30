@@ -3,9 +3,12 @@ package com.example.springboot_crs.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.springboot_crs.entity.Admin;
 import com.example.springboot_crs.entity.Car;
+import com.example.springboot_crs.entity.CarCompany;
 import com.example.springboot_crs.entity.User;
 import com.example.springboot_crs.mapper.UserMapper;
 import com.example.springboot_crs.service.AdminService;
+import com.example.springboot_crs.service.CarService;
+import com.example.springboot_crs.service.CompanyService;
 import com.example.springboot_crs.service.UserService;
 import com.example.springboot_crs.vo.ErrorCode;
 import com.example.springboot_crs.vo.Result;
@@ -27,9 +30,11 @@ public class AdminController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private UserMapper userMapper;
+   @Autowired
+   private CarService carService;
 
+   @Autowired
+   private CompanyService companyService;
 
     /**
      * @description: 管理员登录 (查找校验)
@@ -131,8 +136,116 @@ public class AdminController {
         }
         return Result.fail(3000,"修改失败");
     }
+    /**
+     * @description: 查询车辆(查询所有车辆信息)
+     * @param: []
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-30 11:08
+     */
+    @GetMapping("/selectAllCar")
+    public Result selectAllCar(){
+        List<Car> carList = carService.selectAllCar();
+        return Result.success(carList);
+    }
+    /**
+     * @description: 增加汽车
+     * @param: [car]
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-30 11:22
+     */
+    @PostMapping("/addCar")
+    public Result addCar(@RequestBody Car car){
+        boolean isOk = carService.addCar(car);
+        if (isOk){
+            return Result.success(true);
+        }
+        return Result.fail(3000,"增加失败");
+    }
+    /**
+     * @description: 管理员删除汽车
+     * @param: [carId]
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-30 11:21
+     */
+    @DeleteMapping("/deleteCarById")
+    public Result deleteCarById(@RequestParam String carId){
+        boolean isOk = carService.deleteCar(carId);
 
+        if (isOk){
+            return Result.success(true);
+        }
+        return Result.fail(3000,"删除失败");
+    }
+    /**
+     * @description: 管理员修改汽车
+     * @param: [car]
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-30 11:34
+     */
+    @PutMapping("/updateCar")
+    public Result updateCar(@RequestBody Car car){
+        boolean isOk = adminService.updateCar(car);
+        if (isOk){
+            return Result.success(true);
+        }
+        return Result.fail(3000,"修改失败");
+    }
+    /**
+     * @description: 查询汽车公司(查询所有汽车公司信息)
+     * @param: []
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-30 12:28
+     */
+    @GetMapping("/selectAllCompany")
+    public Result selectAllCompany(){
+        List<CarCompany> companyList = companyService.selectAllCompany();
+        return Result.success(companyList);
+    }
+    /**
+     * @description: 增加公司
+     * @param: [carCompany]
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-30 13:30
+     */
+    @PostMapping("/addCompany")
+    public Result addCompany(@RequestBody CarCompany carCompany){
+        boolean isOk = companyService.addCompany(carCompany);
+        if (isOk){
+            return Result.success(true);
+        }
+        return Result.fail(3000,"增加失败");
 
+    }
+    /**
+     * @description: 删除公司
+     * @param: [companyId]
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-30 13:54
+     */
+    @DeleteMapping("/deleteCompanyById")
+    public Result deleteCompanyById(@RequestParam String carCompanyId){
+        boolean isOk = companyService.deleteCompany(carCompanyId);
 
+        if (isOk){
+            return Result.success(true);
+        }
+        return Result.fail(3000,"删除失败");
+    }
+
+    @PutMapping("/updateCompany")
+    public Result updateCompany(@RequestBody CarCompany company){
+        boolean isOk = adminService.updateCompany(company);
+        if (isOk){
+            return Result.success(true);
+        }
+        return Result.fail(3000,"修改失败");
+    }
 
 }

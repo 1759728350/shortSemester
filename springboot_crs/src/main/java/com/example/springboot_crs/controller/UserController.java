@@ -126,9 +126,9 @@ public class UserController {
      */
     @PutMapping("/updateInfo")
     public Result updateUser(@RequestBody User user,HttpSession session){
-        String userId = session.getAttribute("userId").toString();
-        System.out.println("获取的session userId为"+userId);
-        user.setUserId(userId);
+//        String userId = session.getAttribute("userId").toString();
+//        System.out.println("获取的session userId为"+userId);
+//        user.setUserId(userId);
         boolean isOk = userService.updateUser(user);
         if (isOk){
             return Result.success(true);
@@ -153,5 +153,8 @@ public class UserController {
         return Result.fail(3000,"修改失败");
     }
 
+//    public Result selectUserAndCarInfo(@RequestParam String userId){
+//
+//    }
 
 }

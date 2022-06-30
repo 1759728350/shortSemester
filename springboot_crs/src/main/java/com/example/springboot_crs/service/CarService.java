@@ -42,5 +42,8 @@ public class CarService {
         return count == 1;
     }
 
-    //用户移除个人车辆
+    public List<Car> selectAllCar() {
+        List<Car> cars = carMapper.selectList(null);
+        return cars;
+    }
 }
