@@ -2,6 +2,7 @@ package com.example.springboot_crs.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,7 +25,9 @@ public class Car {
   private long state;
   private double leaseAmount;
   private double overdueAmount;
+  @JsonFormat(locale = "zh", timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
   private java.sql.Timestamp startTime;
+  @JsonFormat(locale = "zh", timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
   private java.sql.Timestamp endTime;
   private double deposit;
   private String carBrand;

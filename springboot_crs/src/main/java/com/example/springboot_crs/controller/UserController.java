@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import com.example.springboot_crs.entity.Car;
 import com.example.springboot_crs.entity.User;
+import com.example.springboot_crs.service.CarService;
 import com.example.springboot_crs.service.UserService;
 import com.example.springboot_crs.utils.VerificationCodeUtils;
 import com.example.springboot_crs.vo.ErrorCode;
@@ -13,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -23,6 +26,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private CarService carService;
 
     /**
      * @description: 使用账号密码与数据库校验
@@ -47,7 +52,7 @@ public class UserController {
 
             if (user.getUserPassword().equals(password)) {
                 //session存储userId
-                session.setAttribute("userId",user.getUserId());
+                session.setAttribute("userId", user.getUserId());
                 return Result.success(user);
             }
 
@@ -59,7 +64,7 @@ public class UserController {
 
     /**
      * @description: 使用短信验证码和验证码进行校验
-     * @param: 电话,验证码
+     * @param: 电话, 验证码
      * @return:
      * @author Hedley
      * @date: 2022-06-27 17:00
@@ -69,7 +74,7 @@ public class UserController {
         String userPhone = jsonObject.getStr("userPhone");
         String code = jsonObject.getStr("code");
 
-        if (code.equals(VerificationCodeUtils.smsCode)){
+        if (code.equals(VerificationCodeUtils.smsCode)) {
             User user = userService.selectUserByPhone(userPhone);
             return Result.success(user);
 
@@ -99,8 +104,8 @@ public class UserController {
             if (users.isEmpty()) {
                 //该手机号是否已被注册
                 boolean isExist = userService.selectPhone(phone);
-                if (isExist){
-                    return Result.fail(3000,"该手机号已被注册");
+                if (isExist) {
+                    return Result.fail(3000, "该手机号已被注册");
                 }
                 //注册账号
                 boolean registerOk = userService.registerUserAccount(account, password, phone);
@@ -117,24 +122,26 @@ public class UserController {
         return Result.fail(ErrorCode.VERIFICATION_CODE_ERROR.getCode(), ErrorCode.VERIFICATION_CODE_ERROR.getMsg());
 
     }
+
     /**
      * @description: 个人信息修改(修改用户个人信息)
-     * @param: 用户名,邮箱,地址,手机号
+     * @param: 用户名, 邮箱, 地址, 手机号
      * @return: com.example.springboot_crs.vo.Result
      * @author Hedley
      * @date: 2022-06-28 13:43
      */
     @PutMapping("/updateInfo")
-    public Result updateUser(@RequestBody User user,HttpSession session){
+    public Result updateUser(@RequestBody User user, HttpSession session) {
 //        String userId = session.getAttribute("userId").toString();
 //        System.out.println("获取的session userId为"+userId);
 //        user.setUserId(userId);
         boolean isOk = userService.updateUser(user);
-        if (isOk){
+        if (isOk) {
             return Result.success(true);
         }
-        return Result.fail(3000,"修改失败");
+        return Result.fail(3000, "修改失败");
     }
+
     /**
      * @description: 用户办理vip ,(修改用户表中vipId对应的等级)
      * @param: [jsonObject]
@@ -143,18 +150,77 @@ public class UserController {
      * @date: 2022-06-28 14:57
      */
     @PutMapping("/updateVipLevel")
-    public Result updateUserVipLevel(@RequestBody JSONObject jsonObject){
+    public Result updateUserVipLevel(@RequestBody JSONObject jsonObject) {
         String vipId = jsonObject.getStr("vipId");
         String userId = jsonObject.getStr("userId");
-        boolean isOk = userService.updateUserVipLevel(vipId,userId);
-        if (isOk){
+        boolean isOk = userService.updateUserVipLevel(vipId, userId);
+        if (isOk) {
             return Result.success(true);
         }
-        return Result.fail(3000,"修改失败");
+        return Result.fail(3000, "修改失败");
     }
 
-//    public Result selectUserAndCarInfo(@RequestParam String userId){
-//
+    /**
+     * @description: 用户根据用户id查询用户拥有车辆以及该用户拥有车辆的租借人信息(若该车没有被租借, 则只返回车辆信息)(多表联查user)
+     * @param: [userId]
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-30 14:45
+     */
+    @GetMapping("/userAndCarInfo")
+    public Result selectUserAndCarInfo(@RequestParam String userId) {
+        List<Map<String, String>> info = userService.selectUserAndCarInfo(userId);
+        return Result.success(info);
+
+    }
+
+    //    @PutMapping("/userLeaseCar")
+//    public Result userLeaseCar(@RequestBody JSONObject jsonObject){
+//        String leaseAmount = jsonObject.getStr("leaseAmount");
+//        String startTime = jsonObject.getStr("startTime");
+//        String endTime = jsonObject.getStr("endTime");
+//        String carId = jsonObject.getStr("carId");
 //    }
+    /**
+     * @description: 用户租借车辆(修改车辆car的租借状态,注意要修改车辆的state为0 (租借中状态) )
+     * @param: [car]
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-30 18:36
+     */
+    @PutMapping("/userLeaseCar")
+    public Result userLeaseCar(@RequestBody Car car) {
+        //查询该汽车是否已经被租出
+        Car target = carService.selectCarById(car.getCarId());
+        if (target.getState() == 0){
+            return Result.fail(3000, "租借失败,该车已被租用");
+        }
+
+        boolean isOk = carService.userLeaseCar(car);
+        if (isOk) {
+            return Result.success(true);
+        }
+        return Result.fail(3000, "租借失败");
+
+    }
+    /**
+     * @description: 用户出租车辆(修改车辆car的租借状态为1(可租借) )
+     * @param: [car]
+     * @return: com.example.springboot_crs.vo.Result
+     * @author Hedley
+     * @date: 2022-06-30 18:53
+     */
+    @PutMapping("/userRentCar")
+    public Result userRentCar(@RequestBody Car car){
+        Car target = carService.selectCarById(car.getCarId());
+        if (target.getState() != 1){
+            return Result.fail(3000, "该车不可出租");
+        }
+        boolean isOk = carService.userRentCar(car);
+        if (isOk) {
+            return Result.success(true);
+        }
+        return Result.fail(3000, "出租失败");
+    }
 
 }

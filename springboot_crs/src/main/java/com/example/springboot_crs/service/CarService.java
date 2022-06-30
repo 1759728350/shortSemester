@@ -46,4 +46,25 @@ public class CarService {
         List<Car> cars = carMapper.selectList(null);
         return cars;
     }
+    /** 
+     * @description: 根据id查找汽车
+     * @author Hedley
+     * @date: 2022-06-30 18:10
+     */ 
+    public Car selectCarById(String carId) {
+       return carMapper.selectById(carId);
+        
+    }
+    /**
+     * @description:  用户租车
+     * @author Hedley
+     * @date: 2022-06-30 18:27
+     */
+    public boolean userLeaseCar(Car car) {
+        return carMapper.updateById(car) == 1;
+    }
+
+    public boolean userRentCar(Car car) {
+        return carMapper.updateById(car) == 1;
+    }
 }

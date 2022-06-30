@@ -6,6 +6,7 @@ import com.example.springboot_crs.entity.User;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 //声明是一个Mapper接口
 @Mapper
@@ -42,5 +43,6 @@ public interface UserMapper extends BaseMapper<User> {
     @Update("update user set vipId = #{vipId} where userId=#{userId}")
     boolean updateUserVipLevel(@Param("vipId") String vipId,@Param("userId") String userId);
 
-
+    @MapKey("id")
+    List<Map<String,String>> selectUserAndCarInfo(String userId);
 }
