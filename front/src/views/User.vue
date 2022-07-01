@@ -106,7 +106,7 @@
     >
        <el-form ref="form" :model="form" label-width="80px">
         <el-form-item label="用户id">
-          <el-input v-model="form.userId"></el-input>
+          <el-input v-model="form.userId" :disabled="true"></el-input>
         </el-form-item>
         </el-form-item>
         <el-form-item label="用户账号">

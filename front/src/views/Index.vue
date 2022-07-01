@@ -40,7 +40,7 @@
             </div>
           </template>
           <div class="tab">
-            <router-link to="/adminLogin" class="a">切换至管理员</router-link>
+            <router-link to="/adminLogin" class="a">管理员模式</router-link>
           </div>
           <div class="tab">
             <el-dropdown @command="handleUser">
@@ -153,7 +153,7 @@
             </div>
             <div class="find">
               <el-input
-                placeholder="请输入搜索内容"
+                placeholder="按照类型查找汽车"
                 v-model="find"
                 class="findInput"
               >
@@ -198,9 +198,9 @@
           <div class="table">
             <el-empty
               description="没有找到相关车辆信息"
-              v-if="showCar"
+              v-if="showCar||this.showData.length==0"
             ></el-empty>
-            <div class="card" v-for="card in carList" v-if="!showCar">
+            <div class="card" v-for="card in showData" v-if="!showCar">
               <div
                 class="leftImg"
                 :style="[
@@ -293,8 +293,8 @@ export default {
       showCar: false,
       isLogin: false,
       userDialog: false,
-      getVip:false,
-      vipLevel:"",
+      getVip: false,
+      vipLevel: "",
       form: {
         userId: "",
         userName: "",
@@ -309,6 +309,7 @@ export default {
       carType: "people",
       currentPage: 1,
       find: "",
+      showData:[],
       myprovince: "北京",
       mycity: [],
       isShow: false,
@@ -851,8 +852,8 @@ export default {
   },
   methods: {
     //租借
-    zujie(car){
-      this.$message.warning("请确认车辆信息")
+    zujie(car) {
+      this.$message.warning("请确认车辆信息");
       if (this.loginFilter()) {
         this.loginJump();
       } else {
@@ -866,33 +867,36 @@ export default {
       }
     },
     //跳转到我的爱车
-    GotoMyCar(){
-      if(this.loginFilter()){
-        this.loginJump()
-      }else{
+    GotoMyCar() {
+      if (this.loginFilter()) {
+        this.loginJump();
+      } else {
         this.$router.push({
-          path:"/myCar"
-        })
+          path: "/myCar",
+        });
       }
     },
     //点击联系方式
-    connect(){
+    connect() {
       this.$notify({
-          title: '联系方式',
-          message: '电话:15042070108'
-        });
+        title: "联系方式",
+        message: "电话:15042070108",
+      });
     },
     //升级vip
-    updateVIP(){
-      axios.put("http://localhost:8000/user/updateVipLevel",{
-        vipId:this.vipLevel,
-        userId:this.userId
-      }).then(res=>{
-        this.getUser()
-        this.$message.success("受理成功!")
-      }).catch(err=>{
-         this.$message.error("受理失败!,请检查余额")
-      })
+    updateVIP() {
+      axios
+        .put("http://localhost:8000/user/updateVipLevel", {
+          vipId: this.vipLevel,
+          userId: this.userId,
+        })
+        .then((res) => {
+          this.getUser();
+          this.$message.success("受理成功!");
+        })
+        .catch((err) => {
+          this.$message.error("受理失败!,请检查余额");
+        });
       this.getVip = false;
     },
     //详情动态路由跳转
@@ -912,13 +916,16 @@ export default {
 
     //vip下拉菜单
     handleVip(command) {
-      if(this.loginFilter()){
-        this.loginJump()
-      }else{
-         if(command==1){
-         this.vipLevel = JSON.parse(localStorage.user).vipId==null?"0":JSON.parse(localStorage.user).vipId;
-         this.getVip = true
-         }
+      if (this.loginFilter()) {
+        this.loginJump();
+      } else {
+        if (command == 1) {
+          this.vipLevel =
+            JSON.parse(localStorage.user).vipId == null
+              ? "0"
+              : JSON.parse(localStorage.user).vipId;
+          this.getVip = true;
+        }
       }
     },
     //修改用户信息
@@ -997,8 +1004,9 @@ export default {
           } else {
             this.carList = res.data.data;
             this.carList = this.carList.filter((item) => {
-              return item.state == 1;
+              return item.state == 1 && item.userId != this.userId;
             });
+            this.showData = this.carList
             this.showCar = false;
           }
         })
@@ -1020,6 +1028,7 @@ export default {
       });
       this.getCarAndCarCompanyInfo();
     },
+    //用户下拉
     handleUser(command) {
       if (command == 0) {
         this.quitLogin();
@@ -1027,8 +1036,8 @@ export default {
       if (command == 1) {
         this.changeUserInfo();
       }
-      if (command == 2){
-        this.GotoMyCar()
+      if (command == 2) {
+        this.GotoMyCar();
       }
     },
     //获取用户信息
@@ -1049,13 +1058,21 @@ export default {
     },
     //查找方法
     search() {
-      alert("查找方法");
+      
+      if (this.find != "" && this.find.length != 0) {
+         this.showData = this.carList
+          this.showData = this.showData.filter((item) => {
+            return item.carModel.indexOf(this.find) != -1;
+          });
+      }else{
+          this.getCarAndCarCompanyInfo()
+      }
     },
     //退出登录
     quitLogin() {
       (this.userId = ""), (this.userName = ""), localStorage.clear();
       this.isLogin = false;
-      this.$message.warning("已登出")
+      this.$message.warning("已登出");
     },
     //用户修改个人信息
     changeUserInfo() {

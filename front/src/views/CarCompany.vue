@@ -23,12 +23,18 @@
       </div>
       <el-table :data="showData" stripe style="width: 100%">
         <el-table-column
-          prop="id"
+          prop="carCid"
           label="汽车公司编号"
           width="180"
         ></el-table-column>
-        <el-table-column prop="username" label="汽车公司名"> </el-table-column>
-        <el-table-column prop="password" label="汽车公司密码" width="180">
+        <el-table-column prop="carCname" label="汽车公司名"> </el-table-column>
+        <el-table-column prop="carCLoc" label="公司所在地">
+        </el-table-column>
+        <el-table-column prop="carCEmail" label="公司邮箱">
+        </el-table-column>
+        <el-table-column prop="carPhone" label="公司手机">
+        </el-table-column>
+        <el-table-column prop="carCInfo" label="备注信息">
         </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
@@ -64,16 +70,25 @@
       width="30%"
       :before-close="handleClose"
     >
-        <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="汽车公司id">
-          <el-input v-model="form.id"></el-input>
+        <el-form ref="form" :model="form" label-width="100px" label-position="left">
+        <el-form-item label="公司id">
+          <el-input v-model="form.carCid"></el-input>
         </el-form-item>
         </el-form-item>
-        <el-form-item label="汽车公司账号">
-          <el-input v-model="form.username"></el-input>
+        <el-form-item label="公司名称">
+          <el-input v-model="form.carCname"></el-input>
         </el-form-item>
-        <el-form-item label="汽车公司密码">
-          <el-input v-model="form.password"></el-input>
+        <el-form-item label="公司所在地">
+          <el-input v-model="form.carCLoc"></el-input>
+        </el-form-item>
+        <el-form-item label="公司邮箱">
+          <el-input v-model="form.carCEmail"></el-input>
+        </el-form-item>
+        <el-form-item label="公司手机号">
+          <el-input v-model="form.carPhone"></el-input>
+        </el-form-item>
+        <el-form-item label="公司备注信息">
+          <el-input v-model="form.carCInfo" type="textarea"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -87,16 +102,26 @@
       width="30%"
       :before-close="handleClose"
     >
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="汽车公司id">
-          <el-input v-model="form.id"></el-input>
+      <el-form ref="form" :model="form" label-width="100px" label-position="left">
+        <el-form-item label="公司id">
+          <el-input v-model="form.carCid" :disabled="true"></el-input>
         </el-form-item>
         </el-form-item>
-        <el-form-item label="汽车公司账号">
-          <el-input v-model="form.username"></el-input>
+        <el-form-item label="公司名称">
+          <el-input v-model="form.carCname"></el-input>
         </el-form-item>
-        <el-form-item label="汽车公司密码">
-          <el-input v-model="form.password"></el-input>
+        <el-form-item label="公司所在地">
+          <el-input v-model="form.carCLoc"></el-input>
+        </el-form-item>
+        <el-form-item label="公司邮箱">
+          <el-input v-model="form.carCEmail"></el-input>
+        </el-form-item>
+        <el-form-item label="公司手机号">
+          <el-input v-model="form.carPhone"></el-input>
+        </el-form-item>
+
+        <el-form-item label="公司备注信息">
+          <el-input v-model="form.carCInfo" type="textarea"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -119,19 +144,22 @@ export default {
       length:0,
       showData: [],
       currentPage: 1,
-      carData: [],
-      price: "",
       user: [],
+      price: "",
+      carCompany: [],
       carid:"",
       form: {
-        id:"",
-        username:"",
-        password:""
+        carCid:"",
+        carCname:"",
+        carCLoc:"",
+        carCEmail:"",
+        carPhone:"",
+        carCInfo:"",
       },
     };
   },
   mounted() {
-    // this.getUser();
+    this.getUser();
   },
   methods: {
     close(type){
@@ -149,7 +177,7 @@ export default {
         }
     },
     putData(){
-        axios.put(`http://localhost:3000/account/${this.form.id}`,this.form).then(res=>{
+        axios.put(`http://localhost:8000/admin/updateCompany`,this.form).then(res=>{
          this.getUser()
          this.dialogVisible2 = false
          for(let i in this.form){
@@ -170,9 +198,10 @@ export default {
       this.currentPage = val
       this.showData = this.user.slice((this.currentPage-1)*5,this.currentPage*5)
     },
+    //新增
     postData() {
       axios
-        .post(`http://localhost:3000/account`, this.form)
+        .post(`http://localhost:8000/admin/addCompany`, this.form)
         .then((res) => {
           //成功,置空所有form中的key值
           for (let i in this.form) {
@@ -180,6 +209,7 @@ export default {
           }
           this.getUser()
           this.dialogVisible = false
+          this.currentPage = 1
           this.$message({
             message: "新增成功",
             type: "success",
@@ -192,11 +222,13 @@ export default {
           });
         });
     },
+    //获取所有汽车公司信息
     getUser() {
       axios
-        .get(`http://localhost:3000/account`)
+        .get(`http://localhost:8000/admin/selectAllCompany`)
         .then((res) => {
-          this.user = res.data;
+          console.log(res.data)
+          this.user = res.data.data;
           this.showData = this.user.slice(0,5)
           this.length = this.user.length
         })
@@ -209,18 +241,17 @@ export default {
       for(let i in this.form){
         this.form[i] = row[i]
       }
-      this.carid = row.id
     },
     //删除汽车公司
     handleDelete(index, row) {
-      axios.delete(`http://localhost:3000/account/${row.id}`).then(res=>{
+      axios.delete(`http://localhost:8000/admin/deleteCompanyById?carCompanyId=${row.carCid}`).then(res=>{
          this.getUser()
+         this.currentPage = 1;
           this.$message({
             message: "删除成功",
             type: "success",
           });
       }).catch(ERR=>{
-           this.getAlldata();
           this.$message({
             message: "删除失败",
             type: "error",
@@ -250,7 +281,7 @@ export default {
     //根据名字搜索
     find() {
       this.showData = this.user.filter(item=>{
-        return item.username.indexOf(this.search)!=-1
+        return item.carCname.indexOf(this.search)!=-1
       })
       this.length = this.showData.length
       if(this.showData.length>5){

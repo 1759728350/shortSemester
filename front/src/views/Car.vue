@@ -12,7 +12,7 @@
           ></el-input>
         </h2>
         <el-button
-          style="float: right; padding: 3px 0;font-size:20px"
+          style="float: right; padding: 3px 0; font-size: 20px"
           type="text"
           @click="dialogVisible = true"
           >添加车辆</el-button
@@ -25,37 +25,34 @@
         stripe
         style="width: 100%"
       >
-        <el-table-column prop="id" label="车辆编号" width="180">
-        </el-table-column>
-        <el-table-column
-          prop="name"
-          label="车辆名称"
-          width="180"
-        ></el-table-column>
-        <el-table-column label="车辆预览" width="180">
+        <el-table-column prop="carId" label="车辆编号"> </el-table-column>
+        <el-table-column prop="carModel" label="车辆型号"></el-table-column>
+        <el-table-column label="车辆预览">
           <template slot-scope="scope">
-            <el-image :src="scope.row.img" style="width: 90px"></el-image>
+            <el-image :src="scope.row.carImg" style="width: 90px"></el-image>
           </template>
         </el-table-column>
-        <el-table-column label="车辆描述">
+        <el-table-column prop="mileage" label="行驶里程"> </el-table-column>
+        <el-table-column prop="mileage" label="租借状态">
+          <template slot-scope="scope">
+            {{ scope.row.state == 0 ? "租借中" : "闲置或可租借" }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="carBrand" label="汽车品牌"> </el-table-column>
+        <el-table-column prop="leaseAmount" label="租借金额(元/月)">
+        </el-table-column>
+        <el-table-column label="备注信息">
           <template slot-scope="scope">
             <el-popover
               placement="bottom"
-              title="描述"
+              title="汽车备注"
               width="300"
               trigger="click"
-              :content="scope.row.info"
+              :content="scope.row.carInfo"
             >
               <el-button slot="reference">点击查看</el-button>
             </el-popover>
           </template>
-        </el-table-column>
-        <el-table-column label="车辆评分" width="180">
-          <template slot-scope="scope">
-            <el-rate v-model="scope.row.eva * 1"></el-rate>
-          </template>
-        </el-table-column>
-        <el-table-column prop="price" label="车辆单价" width="180">
         </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
@@ -90,30 +87,65 @@
       width="30%"
       :before-close="handleClose"
     >
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="车辆名称">
-          <el-input v-model="form.name"></el-input>
+      <el-form
+        ref="form"
+        :model="form"
+        label-width="100px"
+        label-position="left"
+      >
+        <el-form-item label="车辆编号">
+          <el-input v-model="form.carId"></el-input>
         </el-form-item>
-        <el-form-item label="车辆单价">
-          <el-input v-model="form.price"></el-input>
+        <el-form-item label="车辆型号">
+          <el-input v-model="form.carModel"></el-input>
         </el-form-item>
-        <el-form-item label="车辆评分">
-          <el-rate v-model="form.eva"></el-rate>
+        <el-form-item label="车牌号">
+          <el-input v-model="form.carNumber"></el-input>
         </el-form-item>
-        <el-form-item label="车辆描述">
-             <template slot-scope="scope">
-               <el-input
-            type="textarea"
-            :autosize="{ minRows: 2, maxRows: 4 }"
-            placeholder="请输入内容"
-            v-model="form.info"
-          >
-          </el-input>
-            </el-popover>
-          </template>
+        <el-form-item label="车辆颜色">
+          <el-input v-model="form.carColor"></el-input>
         </el-form-item>
-        <el-form-item label="缩略图">
-          <el-input v-model="form.img"></el-input>
+        <el-form-item label="车辆缩略图">
+          <el-input v-model="form.carImg"></el-input>
+        </el-form-item>
+        <el-form-item label="所属公司id">
+          <el-select v-model="form.carCid" placeholder="请选择">
+            <el-option :value="cid" v-for="cid in CIds"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="使用时间">
+          <el-input-number
+            v-model="form.useTime"
+            :min="1"
+            :max="99999"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="行驶里程">
+          <el-input-number
+            v-model="form.mileage"
+            :min="1"
+            :max="99999"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="租借金额">
+          <el-input-number
+            v-model="form.leaseAmount"
+            :min="1"
+            :max="99999"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="逾期金额">
+          <el-input-number
+            v-model="form.overdueAmount"
+            :min="1"
+            :max="99999"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="汽车品牌">
+          <el-input v-model="form.carBrand"></el-input>
+        </el-form-item>
+        <el-form-item label="备注信息">
+          <el-input v-model="form.carInfo" type="textarea"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -127,27 +159,60 @@
       width="30%"
       :before-close="handleClose"
     >
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="车辆名称">
-          <el-input v-model="form.name"></el-input>
+      <el-form
+        ref="form"
+        :model="form"
+        label-width="100px"
+        label-position="left"
+      >
+        <el-form-item label="车辆编号">
+          <el-input v-model="form.carId" :disabled="true"></el-input>
         </el-form-item>
-        <el-form-item label="车辆价格">
-          <el-input v-model="form.price"></el-input>
+        <el-form-item label="车辆型号">
+          <el-input v-model="form.carModel"></el-input>
         </el-form-item>
-        <el-form-item label="车辆评分">
-          <el-rate v-model="form.eva*1"></el-rate>
+        <el-form-item label="车牌号">
+          <el-input v-model="form.carNumber"></el-input>
         </el-form-item>
-        <el-form-item label="车辆描述">
-          <el-input
-            type="textarea"
-            :autosize="{ minRows: 2, maxRows: 4 }"
-            placeholder="请输入内容"
-            v-model="form.info"
-          >
-          </el-input>
+        <el-form-item label="车辆颜色">
+          <el-input v-model="form.carColor"></el-input>
         </el-form-item>
-        <el-form-item label="图片地址">
-          <el-input v-model="form.img"></el-input>
+        <el-form-item label="车辆缩略图">
+          <el-input v-model="form.carImg"></el-input>
+        </el-form-item>
+        <el-form-item label="使用时间">
+          <el-input-number
+            v-model="form.useTime"
+            :min="1"
+            :max="99999"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="行驶里程">
+          <el-input-number
+            v-model="form.mileage"
+            :min="1"
+            :max="99999"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="租借金额">
+          <el-input-number
+            v-model="form.leaseAmount"
+            :min="1"
+            :max="99999"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="逾期金额">
+          <el-input-number
+            v-model="form.overdueAmount"
+            :min="1"
+            :max="99999"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="汽车品牌">
+          <el-input v-model="form.carBrand"></el-input>
+        </el-form-item>
+        <el-form-item label="备注信息">
+          <el-input v-model="form.carInfo" type="textarea"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -161,7 +226,7 @@
 <script>
 import axios from "axios";
 export default {
-  name: "Car",
+  carModel: "Car",
   mounted() {
     this.getAlldata();
   },
@@ -173,45 +238,55 @@ export default {
       search: "",
       dialogVisible: false,
       dialogVisible2: false,
+      CIds: [],
       currentPage: 1,
       form: {
-        name: "",
-        price: "",
-        info: "",
-        img: "",
-        eva: null,
-        id: "",
+        carId: "",
+        carModel: "",
+        carNumber: "",
+        carColor: "",
+        carImg: "",
+        carType: 1,
+        useTime: 1,
+        mileage: 1,
+        state: 1,
+        leaseAmount: 1,
+        overdueAmount: 1,
+        startTime: "",
+        endTime: "",
+        carBrand: "",
+        carLoc: "",
+        carInfo: "",
+        startTime: "",
+        endTime: "",
+        userId: "",
+        leaseholderId: "",
       },
     };
   },
   methods: {
     find() {
+      this.currentPage = 1;
       this.showData = this.tableData.filter((item) => {
-        return item.name.indexOf(this.search) != -1;
+        return item.carModel.indexOf(this.search) != -1;
       });
     },
     editdata() {
-      let obj = {
-        name: this.form.name,
-        info: this.form.fino,
-        price: this.form.price,
-        img: this.form.img,
-        id: this.form.id,
-        eva: this.form.eva + "",
-      };
       axios
-        .patch(`http://localhost:3000/allgoods/${this.form.id}`, obj)
+        .put(`http://localhost:8000/admin/updateCar`, this.form)
         .then((res) => {
           this.getAlldata();
           this.dialogVisible2 = false;
-          for (let i in this.form) {
-            this.form[i] = "";
-          }
           this.$message({
             showClose: true,
             message: "修改成功!",
             type: "success",
           });
+          for (let i in this.form) {
+            this.form[i] = "";
+          }
+          this.currentPage = 1;
+          this.search = "";
         })
         .catch((err) => {
           console.log(err);
@@ -233,6 +308,7 @@ export default {
         })
         .catch((_) => {});
     },
+    //关闭x号
     close() {
       this.dialogVisible = false;
       this.dialogVisible2 = false;
@@ -240,24 +316,25 @@ export default {
         this.form[i] = "";
       }
     },
+    //编辑车辆
     handleEdit(index, row) {
       this.dialogVisible2 = true;
-      this.form.name = row.name;
-      this.form.price = row.price;
-      this.form.info = row.info;
-      this.form.img = row.img;
-      this.form.id = row.id;
-      this.form.eva = row.eva;
+      for (let i in this.form) {
+        this.form[i] = row[i];
+      }
     },
+    //删除操作
     handleDelete(index, row) {
       axios
-        .delete(`http://localhost:3000/allgoods/${row.id}`)
+        .delete(`http://localhost:8000/admin/deleteCarById?carId=${row.carId}`)
         .then((res) => {
           this.$message({
             showClose: true,
             message: "删除成功!",
             type: "success",
           });
+          this.currentPage = 1;
+          this.search = "";
           this.getAlldata();
         })
         .catch((err) => {
@@ -278,29 +355,35 @@ export default {
       console.log(`当前页: ${val}`);
     },
     getAlldata() {
+      this.getCIds();
       axios
-        .get(`http://localhost:3000/allgoods`)
+        .get(`http://localhost:8000/admin/selectAllCar`)
         .then((res) => {
-          this.tableData = res.data;
+          this.tableData = res.data.data;
           this.showData = this.tableData;
         })
         .catch((err) => {
           console.log(err);
         });
     },
-    postData() {
-      let obj = {
-        name: this.form.name,
-        info: this.form.fino,
-        price: this.form.price,
-        img: this.form.img,
-        id: this.form.id,
-        eva: this.form.eva + "",
-        type: "new",
-        volume: "50",
-      };
+    //获取所有公司id
+    getCIds() {
       axios
-        .post(`http://localhost:3000/allgoods`, obj)
+        .get("http://localhost:8000/admin/selectAllCompany")
+        .then((res) => {
+          res.data.data.forEach((item) => {
+            this.CIds.push(item.carCid);
+          });
+          console.log(this.CIds);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    //新增车辆
+    postData() {
+      axios
+        .post(`http://localhost:8000/admin/addCar`, this.form)
         .then((res) => {
           this.getAlldata();
           this.dialogVisible = false;
@@ -308,6 +391,7 @@ export default {
             this.form[i] = "";
           }
           this.search = "";
+          this.currentPage = 1;
           this.$message({
             showClose: true,
             message: "添加成功!",
@@ -319,6 +403,7 @@ export default {
           for (let i in this.form) {
             this.form[i] = "";
           }
+          this.search = "";
           this.$message({
             showClose: true,
             message: "添加失败!",

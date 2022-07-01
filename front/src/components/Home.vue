@@ -34,7 +34,7 @@
 
           <el-submenu index="3">
             <template #title>
-              <i class="el-icon-location"></i>
+              <i class="el-icon-office-building"></i>
               <span class="white font">汽车公司管理</span>
             </template>
             <el-menu-item-group class="bgcolor">
@@ -48,7 +48,7 @@
       <div class="top">
         <el-dropdown trigger="click" class="pos" @command="adminQuit">
           <span class="el-dropdown-link font"> 
-            管理员
+            admin
             <i class="el-icon-arrow-down el-icon--right"></i>
           </span>
           <el-dropdown-menu>

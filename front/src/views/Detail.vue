@@ -36,51 +36,51 @@
     </div>
     <el-dialog
       title="汽车租借"
-      :visible.sync="dialogVisible"
+      :visible.sync="disalog1"
       width="60%"
       :before-close="handleClose"
     >
       <el-steps :active="active" align-center>
-        <el-step
-          title="确认信息"
-        >
-        </el-step>
-        <el-step
-          title="生成订单"
-        >
-        </el-step>
-        <el-step
-          title="付款"
-        ></el-step>
+        <el-step title="选择租借时长"> </el-step>
+        <el-step title="生成订单"> </el-step>
+        <el-step title="付款"></el-step>
       </el-steps>
-      <div class="yi" v-if="active==0">
-        <h2>请确认车辆相关信息</h2>
+      <div class="yi" v-if="active == 0">
+        <div class="block">
+          <el-date-picker
+            v-model="date"
+            type="datetimerange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+          >
+          </el-date-picker>
+        </div>
       </div>
-      <div class="er" v-if="active==1">
-        <h2  v-loading="loading"
-    element-loading-text="生成订单中">生成订单</h2>
+      <div class="er" v-if="active == 1">
+        <h2 v-loading="loading" element-loading-text="生成订单中">生成订单</h2>
       </div>
-      <div class="san" v-if="active==2||active==3">
+      <div class="san" v-if="active == 2 || active == 3">
         <h4>请扫描二维码付款</h4>
-        <br>
-         <el-image
-      style="width: 260px; height: 260px"
-      src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.xjishu.com%2Fimg%2Fzl%2F2017%2F10%2F19454498268039.gif&refer=http%3A%2F%2Fimg.xjishu.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1659162149&t=cbc934a0afdb633a5602a4eff4f1eecc"
-      fit="fit"></el-image>
-      
+        <br />
+        <el-image
+          style="width: 260px; height: 260px"
+          src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.xjishu.com%2Fimg%2Fzl%2F2017%2F10%2F19454498268039.gif&refer=http%3A%2F%2Fimg.xjishu.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1659162149&t=cbc934a0afdb633a5602a4eff4f1eecc"
+          fit="fit"
+        ></el-image>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false,active=0">取 消</el-button>
-        <el-button type="primary" @click="next()"
-          >{{active!=3?'下一步':'确认租借'}}</el-button
-        >
+        <el-button @click="(disalog1 = false), (active = 0)">取 消</el-button>
+        <el-button type="primary" @click="next()">{{
+          active != 3 ? "下一步" : "确认租借"
+        }}</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import axios from 'axios'
+import axios from "axios";
 export default {
   name: "Detail",
   mounted() {
@@ -89,24 +89,48 @@ export default {
   data() {
     return {
       car: {},
-      active:0,
+      active: 0,
       loading: true,
-      dialogVisible: false,
+      disalog1: false,
+      date: [],
     };
   },
   methods: {
     //下一步
-    next(){
-      this.active++
-      if(this.active>3){
-        console.log("确认提交")
-        this.active = 0
-        this.dialogVisible=false
+    next() {
+      if (this.date.length != 0) {
+        this.active++;
+        if (this.active > 3) {
+          let startTime = this.date[0].format("yyyy-MM-dd hh:mm:ss");
+          let endTime = this.date[1].format("yyyy-MM-dd hh:mm:ss");
+          this.rentCar(startTime,endTime);
+          this.active = 0;
+          this.disalog1 = false;
+        }
+      }else{
+          this.$message("日期不能为空!")
       }
     },
     //租借车辆
-    rentCar(){
-
+    rentCar(stime,etime) {
+      let uID = JSON.parse(localStorage.user).userId;
+      axios.put("http://localhost:8000/user/userLeaseCar",{
+        leaseholderId:uID,
+        startTime:stime,
+        endTime:etime,
+        carId:this.car.carId
+      }).then(res=>{
+        if(res.data.success){
+          this.$message.success("租借成功!请及时归还车辆")
+          this.$router.push({
+            path:"/"
+          })
+          this.date = []
+        }
+      }).catch(err=>{
+        console.log(err)
+        this.date = []
+      })
     },
     //关闭之前
     handleClose() {},
@@ -126,10 +150,32 @@ export default {
       });
     },
     rent() {
-      this.dialogVisible = true;
+      this.disalog1 = true;
     },
+    
   },
 };
+//日期转换
+Date.prototype.format = function(fmt) { 
+     var o = { 
+        "M+" : this.getMonth()+1,                 //月份 
+        "d+" : this.getDate(),                    //日 
+        "h+" : this.getHours(),                   //小时 
+        "m+" : this.getMinutes(),                 //分 
+        "s+" : this.getSeconds(),                 //秒 
+        "q+" : Math.floor((this.getMonth()+3)/3), //季度 
+        "S"  : this.getMilliseconds()             //毫秒 
+    }; 
+    if(/(y+)/.test(fmt)) {
+            fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length)); 
+    }
+     for(var k in o) {
+        if(new RegExp("("+ k +")").test(fmt)){
+             fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+         }
+     }
+    return fmt; 
+} 
 </script>
 
 <style scoped>
@@ -214,15 +260,15 @@ img {
   margin-top: 5%;
   width: 80%;
 }
-.yi{
+.yi {
   margin-top: 20px;
   text-align: center;
 }
-.er{
+.er {
   margin-top: 20px;
   text-align: center;
 }
-.san{
+.san {
   position: relative;
   margin-top: 20px;
   left: 30%;
