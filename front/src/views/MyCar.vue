@@ -33,7 +33,7 @@
               <div>汽车颜色:{{ o.carColor }}</div>
               <div>租借状态:{{ o.state == 0 ? "租借中" : "闲置或可租借" }}</div>
 
-              <template v-if="o.state != 0">
+              <template v-if="o.state == 2">
                 <div>车牌号:{{ o.carNumber }}</div>
                 <div>租借金额:{{ o.LeaseAmount }}元/月</div>
                 <div>车辆使用时间:{{ o.useTime }}年</div>
@@ -43,6 +43,18 @@
                 <div class="bottom clearfix">
                   <el-button type="primary" class="leftbutton" @click="rentCar(o)">出 租</el-button>
                   <el-button type="danger" class="button" @click="deleteCar(o.carId)">移 除</el-button>
+                </div>
+              </template>
+              <template v-if="o.state == 1">
+                <div>车牌号:{{ o.carNumber }}</div>
+                <div>租借金额:{{ o.LeaseAmount }}元/月</div>
+                <div>车辆使用时间:{{ o.useTime }}年</div>
+                <div>已行驶里程:{{ o.mileage }}里</div>
+                <div>车辆备注:{{ o.carInfo }}</div>
+
+                <div class="bottom clearfix">
+                  <el-button type="primary" class="leftbutton" >等待租借</el-button>
+                  <el-button type="danger" class="button" @click="deleteCar(o.carId)">取消租借</el-button>
                 </div>
               </template>
               <template v-if="o.state == 0">
@@ -99,14 +111,14 @@
             v-model="form.useTime"
             :min="1"
             :max="99999"
-          ></el-input-number>
+          ></el-input-number> 年
         </el-form-item>
         <el-form-item label="行驶里程">
           <el-input-number
             v-model="form.mileage"
             :min="1"
             :max="99999"
-          ></el-input-number>
+          ></el-input-number> 公里
         </el-form-item>
         <el-form-item label="租借金额">
           <el-input-number
@@ -155,10 +167,10 @@ export default {
         carNumber: "",
         carColor: "",
         carImg: "",
-        carType: 1,
+        carType: 0,
         useTime: 1,
         mileage: 1,
-        state: 1,
+        state: 2,
         leaseAmount: 1,
         overdueAmount: 1,
         startTime: "",
@@ -170,10 +182,12 @@ export default {
         endTime: "",
         userId: "",
         leaseholderId: "",
+        carLoc:""
       },
     };
   },
   methods: {
+    //出租车辆
     rentCar(car){
       axios.put("http://localhost:8000/user/userRentCar",{
         carId:car.carId,
@@ -239,6 +253,7 @@ export default {
     //获取我的爱车
     getMyCar() {
       let userId = JSON.parse(localStorage.user).userId;
+     
       axios
         .get(`http://localhost:8000/user/userAndCarInfo?userId=${userId}`)
         .then((res) => {
@@ -266,9 +281,7 @@ export default {
     },
     //新增车辆
     postData() {
-      // if(this.form.carModel==""||this.form.carNumber==""){
-
-      // }
+       this.form.carLoc =  localStorage.getItem("myloc");
       axios
         .post(`http://localhost:8000/admin/addCar`, this.form)
         .then((res) => {

@@ -14,7 +14,37 @@
       <div>
         <div class="cardBox">
           <div class="bodyBox-2">
-            <img :src="car.carImg" alt="图片" class="img" />
+            <div class="boxImg">
+              <img :src="car.carImg" alt="图片" class="img" />
+            </div>
+            <div class="commit">
+              <div class="commitHeader">
+                <h2>用户点评</h2>
+              </div>
+              <div class="userCommit">
+                <hr />
+                <div v-for="i in 10" style="background-color: #f2f6fc">
+                  <div class="commitTop">
+                    <div class="userName">
+                      用户&nbsp;665895
+                      <div class="commitTime">2022-10-18</div>
+                    </div>
+                    <div class="commitGrade">
+                      <el-rate
+                        v-model="grade"
+                        show-text
+                        :colors="colors"
+                        :texts="texts"
+                      ></el-rate>
+                    </div>
+                  </div>
+                  <div class="commitText">
+                    该用户未作出评价,系统默认好评!
+                    <hr />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="bodyBox">
             <p>车牌号:{{ car.carNumber }}</p>
@@ -30,9 +60,57 @@
             <el-button type="danger" @click="rent()">租借车辆</el-button>
             <br />
             <el-button type="primary" @click="connect()">联系方式</el-button>
+            <br />
+            <el-button type="info" @click="displayCommit()">发表评论</el-button>
           </div>
+          <transition>
+            <div class="Drawer" v-show="drawer">
+              <div class="title">
+                <span>发表一条友善的评论吧</span>
+                <i
+                  class="el-icon-close"
+                  @click="drawer = false"
+                  style="float: right; font-size: 22px"
+                ></i>
+              </div>
+              <div class="commitBody">
+                <div style="width:70%;height:100%;">
+                  <el-input
+                    type="textarea"
+                    rows="7"
+                    placeholder="请输入内容"
+                    v-model="textarea"
+                    :resize="'none'"
+                  ></el-input>
+                </div>
+                <div>
+                    <div>
+                       <el-rate
+                        v-model="grade"
+                        show-text
+                        :colors="colors"
+                        :texts="texts"
+                      ></el-rate>
+                    </div>
+                    <div><el-button type="primary">提交评论</el-button></div>
+                </div>
+              </div>
+            </div>
+          </transition>
         </div>
       </div>
+      <!-- <el-drawer
+      title="发表一条友善的评论吧"
+      :visible.sync="drawer"
+      :direction="direction"
+      :before-close="handleClose"
+      :modal="false"
+      :wrapperClosable="false"
+      :size="'40%'"
+      close-on-press-escape = "true"
+    >
+      
+    </el-drawer> -->
     </div>
     <el-dialog
       title="汽车租借"
@@ -89,10 +167,16 @@ export default {
   data() {
     return {
       car: {},
+      drawer: false,
+      textarea:"",
+      direction: "btt",
       active: 0,
       loading: true,
+      texts: ["差评", "较差", "一般", "较好", "好评"],
       disalog1: false,
+      colors: ["#409EFF", "#409EFF", "#409EFF"],
       date: [],
+      grade: 5,
     };
   },
   methods: {
@@ -103,37 +187,52 @@ export default {
         if (this.active > 3) {
           let startTime = this.date[0].format("yyyy-MM-dd hh:mm:ss");
           let endTime = this.date[1].format("yyyy-MM-dd hh:mm:ss");
-          this.rentCar(startTime,endTime);
+          this.rentCar(startTime, endTime);
           this.active = 0;
           this.disalog1 = false;
         }
-      }else{
-          this.$message("日期不能为空!")
+      } else {
+        this.$message("日期不能为空!");
       }
     },
     //租借车辆
-    rentCar(stime,etime) {
+    rentCar(stime, etime) {
       let uID = JSON.parse(localStorage.user).userId;
-      axios.put("http://localhost:8000/user/userLeaseCar",{
-        leaseholderId:uID,
-        startTime:stime,
-        endTime:etime,
-        carId:this.car.carId
-      }).then(res=>{
-        if(res.data.success){
-          this.$message.success("租借成功!请及时归还车辆")
-          this.$router.push({
-            path:"/"
-          })
-          this.date = []
-        }
-      }).catch(err=>{
-        console.log(err)
-        this.date = []
-      })
+      axios
+        .put("http://localhost:8000/user/userLeaseCar", {
+          leaseholderId: uID,
+          startTime: stime,
+          endTime: etime,
+          carId: this.car.carId,
+        })
+        .then((res) => {
+          if (res.data.success) {
+            this.$message.success("租借成功!请及时归还车辆");
+            this.$router.push({
+              path: "/",
+            });
+            this.date = [];
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          this.date = [];
+        });
+    },
+    // 显示评论区
+    displayCommit() {
+      this.drawer = true;
     },
     //关闭之前
-    handleClose() {},
+    handleClose() {
+      this.$confirm("确认关闭？")
+        .then((res) => {
+          if (res === "confirm") {
+            this.drawer = false;
+          }
+        })
+        .catch((err) => {});
+    },
     goBack() {
       this.$router.push({
         path: "/",
@@ -152,30 +251,35 @@ export default {
     rent() {
       this.disalog1 = true;
     },
-    
   },
 };
 //日期转换
-Date.prototype.format = function(fmt) { 
-     var o = { 
-        "M+" : this.getMonth()+1,                 //月份 
-        "d+" : this.getDate(),                    //日 
-        "h+" : this.getHours(),                   //小时 
-        "m+" : this.getMinutes(),                 //分 
-        "s+" : this.getSeconds(),                 //秒 
-        "q+" : Math.floor((this.getMonth()+3)/3), //季度 
-        "S"  : this.getMilliseconds()             //毫秒 
-    }; 
-    if(/(y+)/.test(fmt)) {
-            fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length)); 
+Date.prototype.format = function (fmt) {
+  var o = {
+    "M+": this.getMonth() + 1, //月份
+    "d+": this.getDate(), //日
+    "h+": this.getHours(), //小时
+    "m+": this.getMinutes(), //分
+    "s+": this.getSeconds(), //秒
+    "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+    S: this.getMilliseconds(), //毫秒
+  };
+  if (/(y+)/.test(fmt)) {
+    fmt = fmt.replace(
+      RegExp.$1,
+      (this.getFullYear() + "").substr(4 - RegExp.$1.length)
+    );
+  }
+  for (var k in o) {
+    if (new RegExp("(" + k + ")").test(fmt)) {
+      fmt = fmt.replace(
+        RegExp.$1,
+        RegExp.$1.length == 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length)
+      );
     }
-     for(var k in o) {
-        if(new RegExp("("+ k +")").test(fmt)){
-             fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
-         }
-     }
-    return fmt; 
-} 
+  }
+  return fmt;
+};
 </script>
 
 <style scoped>
@@ -211,7 +315,53 @@ h3 {
   margin-left: 25%;
   height: 500px;
   margin-top: 5%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  position: relative;
+  overflow: hidden;
 }
+.Drawer {
+  position: absolute;
+  width: 100%;
+  height: 40%;
+  background-color: white;
+  border-top: 1px solid black;
+  bottom: 0;
+  transition: 2s;
+}
+.title {
+  padding: 8px 8px;
+  font-weight: bold;
+  font-size: 18px;
+}
+.commitBody {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-content: center;
+}
+.commitBody>div:nth-child(2){
+  width:25%;
+  height:70%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: space-around;
+  font-size: 20px;
+}
+/* vue动画 */
+.v-enter,
+.v-leave-to {
+  transform: translateY(200px);
+}
+.v-enter-active,
+.v-leave-active {
+  transition: all 1s ease;
+}
+
 .headerBox {
   color: #fff;
   padding: 10px;
@@ -238,10 +388,47 @@ h3 {
   float: left;
   color: red;
 }
+
 .bodyBox-2 {
   float: left;
   width: 80%;
   height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+}
+.boxImg {
+  width: 80%;
+  height: 60%;
+}
+.commit {
+  width: 100%;
+  height: 40%;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: space-between;
+  overflow: auto;
+}
+.userCommit {
+  width: 100%;
+  height: 80%;
+}
+.commitTop {
+  width: 100%;
+  height: 35%;
+  font-weight: bolder;
+  font-size: 18px;
+  padding-bottom: 16px;
+}
+.commitText {
+  width: 100%;
+  height: 63%;
+  font-size: 18px;
+  font-weight: bold;
+}
+.commitTime {
+  float: right;
 }
 .bodyBox > p {
   margin-bottom: 10%;

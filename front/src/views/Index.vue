@@ -12,7 +12,7 @@
             ></router-link>
           </div>
           <div class="Loc">
-            当前省份:<span class="blue">&nbsp;{{ this.myprovince }}&nbsp;</span>
+            当前所在地:<span class="blue">&nbsp;{{ this.myprovince }}&nbsp;</span>
             <el-dropdown trigger="click" @command="changeProvice"
               ><router-link to="#" class="a">[点击切换] </router-link>
               <el-dropdown-menu slot="dropdown">
@@ -294,6 +294,7 @@ export default {
       isLogin: false,
       userDialog: false,
       getVip: false,
+      myLoc:"",
       vipLevel: "",
       form: {
         userId: "",
@@ -977,6 +978,7 @@ export default {
     //获取当前城市所有租借车辆和汽车公司信息
     getCarAndCarCompanyInfo() {
       //获取汽车公司信息
+      localStorage.setItem("myloc",this.location)
       axios
         .get(`http://localhost:8000/company/city?myCity=${this.location}`)
         .then((res) => {
@@ -1021,11 +1023,12 @@ export default {
     //通过省默认获得第一个市信息(包括汽车和汽车公司信息)
     getMyCity() {
       this.cityList.forEach((city) => {
-        if (city.province == this.myprovince) {
+        if (city.province === this.myprovince) {
           this.mycity = city.city;
         }
         this.location = this.mycity[0];
       });
+     
       this.getCarAndCarCompanyInfo();
     },
     //用户下拉
@@ -1073,6 +1076,7 @@ export default {
       (this.userId = ""), (this.userName = ""), localStorage.clear();
       this.isLogin = false;
       this.$message.warning("已登出");
+      this.getMyCity()
     },
     //用户修改个人信息
     changeUserInfo() {
