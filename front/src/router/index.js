@@ -25,6 +25,11 @@ const routes = [
     component: ()=> import("../components/adminLogin.vue")
   },
   {
+    path:"/myRent",
+    name:"myRent",
+    component:()=>import("../views/MyRent.vue")
+  },
+  {
     path:"/adminHome",
     name:"adminHome",
     redirect:"/user",

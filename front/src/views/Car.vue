@@ -102,6 +102,9 @@
         <el-form-item label="车牌号">
           <el-input v-model="form.carNumber"></el-input>
         </el-form-item>
+        <el-form-item label="车辆所在地">
+          <el-input v-model="form.carLoc"></el-input>
+        </el-form-item>
         <el-form-item label="车辆颜色">
           <el-input v-model="form.carColor"></el-input>
         </el-form-item>
@@ -170,6 +173,9 @@
         </el-form-item>
         <el-form-item label="车辆型号">
           <el-input v-model="form.carModel"></el-input>
+        </el-form-item>
+         <el-form-item label="车辆所在地">
+          <el-input v-model="form.carLoc"></el-input>
         </el-form-item>
         <el-form-item label="车牌号">
           <el-input v-model="form.carNumber"></el-input>
@@ -283,7 +289,12 @@ export default {
             type: "success",
           });
           for (let i in this.form) {
-            this.form[i] = "";
+            if(i=='carType'||i=='state'){
+                this.form[i] = 1;
+            }else{
+              this.form[i] = "";
+            }
+          
           }
           this.currentPage = 1;
           this.search = "";
@@ -361,6 +372,7 @@ export default {
         .then((res) => {
           this.tableData = res.data.data;
           this.showData = this.tableData;
+          
         })
         .catch((err) => {
           console.log(err);
@@ -388,7 +400,11 @@ export default {
           this.getAlldata();
           this.dialogVisible = false;
           for (let i in this.form) {
-            this.form[i] = "";
+            if(i=='carType'||i=='state'){
+                this.form[i] = 1;
+            }else{
+              this.form[i] = "";
+            }
           }
           this.search = "";
           this.currentPage = 1;

@@ -23,26 +23,31 @@
               </div>
               <div class="userCommit">
                 <hr />
-                <div v-for="i in 10" style="background-color: #f2f6fc">
+                <div v-if="commit.length==0">
+                    <h3>暂无相关评论</h3>
+                </div>
+                <div v-for="i in commit" style="background-color: #f2f6fc" v-else>
                   <div class="commitTop">
                     <div class="userName">
-                      用户&nbsp;665895
-                      <div class="commitTime">2022-10-18</div>
+                      用户&nbsp;{{i.coUid.slice(0,10)}}
+                      <div class="commitTime">{{new Date(i.createTime).toLocaleDateString()}}</div>
                     </div>
                     <div class="commitGrade">
                       <el-rate
-                        v-model="grade"
+                        v-model="i.level"
                         show-text
                         :colors="colors"
                         :texts="texts"
+                        disabled
                       ></el-rate>
                     </div>
                   </div>
                   <div class="commitText">
-                    该用户未作出评价,系统默认好评!
+                    {{i.content}}
                     <hr />
                   </div>
                 </div>
+                
               </div>
             </div>
           </div>
@@ -79,38 +84,26 @@
                     type="textarea"
                     rows="7"
                     placeholder="请输入内容"
-                    v-model="textarea"
+                    v-model="newCommit.content"
                     :resize="'none'"
                   ></el-input>
                 </div>
                 <div>
                     <div>
                        <el-rate
-                        v-model="grade"
+                        v-model="newCommit.level"
                         show-text
                         :colors="colors"
                         :texts="texts"
                       ></el-rate>
                     </div>
-                    <div><el-button type="primary">提交评论</el-button></div>
+                    <div><el-button type="primary" @click="addNewCommit()">提交评论</el-button></div>
                 </div>
               </div>
             </div>
           </transition>
         </div>
       </div>
-      <!-- <el-drawer
-      title="发表一条友善的评论吧"
-      :visible.sync="drawer"
-      :direction="direction"
-      :before-close="handleClose"
-      :modal="false"
-      :wrapperClosable="false"
-      :size="'40%'"
-      close-on-press-escape = "true"
-    >
-      
-    </el-drawer> -->
     </div>
     <el-dialog
       title="汽车租借"
@@ -163,12 +156,14 @@ export default {
   name: "Detail",
   mounted() {
     this.getCar();
+    
   },
   data() {
     return {
       car: {},
       drawer: false,
       textarea:"",
+      commit:{},
       direction: "btt",
       active: 0,
       loading: true,
@@ -177,6 +172,10 @@ export default {
       colors: ["#409EFF", "#409EFF", "#409EFF"],
       date: [],
       grade: 5,
+      newCommit:{
+        content:"",
+        level:5
+      }
     };
   },
   methods: {
@@ -241,6 +240,7 @@ export default {
     //获取当前车辆
     getCar() {
       this.car = JSON.parse(this.$route.query.thisCar);
+      this.getCommit();
     },
     connect() {
       this.$notify({
@@ -251,6 +251,35 @@ export default {
     rent() {
       this.disalog1 = true;
     },
+    getCommit(){
+      axios.get(`http://localhost:8000/commit/selectCommit?carId=${this.car.carId}`).then(res=>{
+        if(res.status===200){
+            this.commit = res.data.data
+            console.log(this.commit)
+        }
+      }).catch(err=>{
+        console.log(err)
+      })
+    },
+    addNewCommit(){
+      let commit = {
+        coUid:JSON.parse(localStorage.getItem('user')).userId,
+        level:this.newCommit.level+"",
+        content:this.newCommit.content,
+        carId:this.car.carId
+      }
+      axios.post("http://localhost:8000/commit/addCommit",commit).then(res=>{
+        if(res.status===200){
+          this.newCommit.content="";
+          this.newCommit.level=5;
+          this.$message('发布成功!');
+          this.getCommit()
+          this.drawer = false
+        }
+      }).catch(err=>{
+        console.log(err)
+      })
+    }
   },
 };
 //日期转换

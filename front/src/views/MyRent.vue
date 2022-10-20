@@ -3,15 +3,12 @@
     <div class="tabbar">
       <el-page-header
         @back="goBack"
-        content="详情页面"
+        content="我的租借"
         style="width: 100%; height: 100%"
       >
         <template #title><h3>返回</h3></template>
-        <template #content
-          ><h3>我的爱车</h3>
-          <h3 class="right" @click="addCar()">
-            <i class="el-icon-plus"></i>添加爱车
-          </h3>
+         <template #content
+          ><h3>我的租借</h3>
         </template>
       </el-page-header>
     </div>
@@ -31,46 +28,16 @@
             <div style="padding: 14px">
               <div>汽车型号:{{ o.carModel }}</div>
               <div>汽车颜色:{{ o.carColor }}</div>
-              <div>租借状态:{{ o.state == 0 ? "租借中" : "闲置或可租借" }}</div>
-
-              <template v-if="o.state == 2">
-                <div>车牌号:{{ o.carNumber }}</div>
-                <div>租借金额:{{ o.LeaseAmount }}元/月</div>
-                <div>车辆使用时间:{{ o.useTime }}年</div>
-                <div>已行驶里程:{{ o.mileage }}里</div>
-                <div>车辆备注:{{ o.carInfo }}</div>
-
-                <div class="bottom clearfix">
-                  <el-button type="primary" class="leftbutton" @click="rentCar(o)">出 租</el-button>
-                  <el-button type="danger" class="button" @click="deleteCar(o.carId)">移 除</el-button>
-                </div>
-              </template>
-              <template v-if="o.state == 1">
-                <div>车牌号:{{ o.carNumber }}</div>
-                <div>租借金额:{{ o.LeaseAmount }}元/月</div>
-                <div>车辆使用时间:{{ o.useTime }}年</div>
-                <div>已行驶里程:{{ o.mileage }}里</div>
-                <div>车辆备注:{{ o.carInfo }}</div>
-
-                <div class="bottom clearfix">
-                  <el-button type="primary" class="leftbutton" >等待租借</el-button>
-                  <el-button type="danger" class="button" @click="deleteCar(o.carId)">取消租借</el-button>
-                </div>
-              </template>
               <template v-if="o.state == 0">
+                <div>车牌号:{{ o.carNumber }}</div>
                 <div>租借金额:{{ o.LeaseAmount }}元/月</div>
-                <div>逾期金额:{{ o.overdueAmount }}元/月</div>
-                <div>结束时间:{{o.endTime!=null?o.endTime.slice(0,10):"很久"}}</div>
-                <div>租借人姓名:{{ o.userName }}</div>
-                <div>租借人邮箱:{{ o.userEmail }}</div>
+                <div>车辆使用时间:{{ o.useTime }}年</div>
+                <div>已行驶里程:{{ o.mileage }}里</div>
+                <div>车辆备注:{{ o.carInfo }}</div>
+
                 <div class="bottom clearfix">
-                  <el-button
-                    type="primary"
-                    @click="connect(o.userPhone)"
-                    class="leftbutton"
-                    >联系租客</el-button
-                  >
-                  <el-button type="danger" class="button">待补充</el-button>
+                  <el-button type="primary" class="leftbutton" @click="rentCar(o)">租借中</el-button>
+                  <el-button type="danger" class="button" @click="deleteCar(o.carId)">提前还车</el-button>
                 </div>
               </template>
             </div>
@@ -82,74 +49,7 @@
       <br>
       <el-empty description="未找到任何相关信息"></el-empty>
     </div>
-    <el-dialog
-      title="编辑车辆"
-      :visible.sync="dialogVisible2"
-      width="30%"
-      :before-close="handleClose"
-    >
-      <el-form
-        ref="form"
-        :show-close="false"
-        :model="form"
-        label-width="100px"
-        label-position="left"
-      >
-        <el-form-item label="车辆编号">
-          <el-input v-model="form.carId" :disabled="true"></el-input>
-        </el-form-item>
-        <el-form-item label="车辆型号">
-          <el-input v-model="form.carModel"></el-input>
-        </el-form-item>
-        <el-form-item label="车牌号">
-          <el-input v-model="form.carNumber"></el-input>
-        </el-form-item>
-        <el-form-item label="车辆颜色">
-          <el-input v-model="form.carColor"></el-input>
-        </el-form-item>
-        <el-form-item label="车辆缩略图">
-          <el-input v-model="form.carImg"></el-input>
-        </el-form-item>
-        <el-form-item label="使用时间">
-          <el-input-number
-            v-model="form.useTime"
-            :min="1"
-            :max="99999"
-          ></el-input-number> 年
-        </el-form-item>
-        <el-form-item label="行驶里程">
-          <el-input-number
-            v-model="form.mileage"
-            :min="1"
-            :max="99999"
-          ></el-input-number> 公里
-        </el-form-item>
-        <el-form-item label="租借金额">
-          <el-input-number
-            v-model="form.leaseAmount"
-            :min="1"
-            :max="99999"
-          ></el-input-number>
-        </el-form-item>
-        <el-form-item label="逾期金额">
-          <el-input-number
-            v-model="form.overdueAmount"
-            :min="1"
-            :max="99999"
-          ></el-input-number>
-        </el-form-item>
-        <el-form-item label="汽车品牌">
-          <el-input v-model="form.carBrand"></el-input>
-        </el-form-item>
-        <el-form-item label="备注信息">
-          <el-input v-model="form.carInfo" type="textarea"></el-input>
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="close()">取 消</el-button>
-        <el-button type="primary" @click="postData()">确定</el-button>
-      </span>
-    </el-dialog>
+    
   </div>
 </template>
 
@@ -191,24 +91,6 @@ export default {
     };
   },
   methods: {
-    //出租车辆
-    rentCar(car){
-      axios.put("http://localhost:8000/user/userRentCar",{
-        carId:car.carId,
-        leaseAmount:car.leaseAmount,
-        overdueAmount:car.overdueAmount
-      }).then(res=>{
-        console.log(res)
-         this.$message({
-            showClose: true,
-            message: "出租成功,请等待租客..",
-            type: "success",
-          });
-        this.getMyCar()
-      }).catch(err=>{
-        console.log(err)
-      })
-    },
     deleteCar(cid){
        axios
         .delete(`http://localhost:8000/admin/deleteCarById?carId=${cid}`)
@@ -254,7 +136,7 @@ export default {
       }
     },
 
-    //获取我的爱车
+    //获取我的租车信息
     getMyCar() {
       let userId = JSON.parse(localStorage.user).userId;
      
@@ -267,21 +149,6 @@ export default {
         .catch((err) => {
           console.log(err);
         });
-    },
-    //添加车辆()
-    addCar() {
-      if(!this.five()){
-        this.dialogVisible2 = true;
-      this.form.carId = this.randomString(32);
-      this.form.userId = JSON.parse(localStorage.user).userId;
-      }else{
-        this.$message.error("个人最多可添加5辆私家车")
-      }
-    
-    },
-    //判断是否为5
-    five(){
-      return this.carAndUser.length >=5
     },
     //新增车辆
     postData() {

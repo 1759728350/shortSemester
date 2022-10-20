@@ -55,6 +55,9 @@
                   <el-dropdown-item command="2">我的爱车</el-dropdown-item>
                 </div>
                 <div>
+                  <el-dropdown-item command="3">我的租借</el-dropdown-item>
+                </div>
+                <div>
                   <el-dropdown-item command="0">退出登录</el-dropdown-item>
                 </div>
               </el-dropdown-menu>
@@ -1041,6 +1044,11 @@ export default {
       }
       if (command == 2) {
         this.GotoMyCar();
+      }
+      if (command == 3) {
+        this.$router.push({
+          path:"/myRent"
+        });
       }
     },
     //获取用户信息
