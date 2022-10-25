@@ -41,6 +41,15 @@
               <el-menu-item index="carCompany" class="white">汽车公司列表</el-menu-item>
             </el-menu-item-group>
           </el-submenu>
+           <el-submenu index="4">
+            <template #title>
+              <i class="el-icon-s-order"></i>
+              <span class="white font">用户评论管理</span>
+            </template>
+            <el-menu-item-group class="bgcolor">
+              <el-menu-item index="Commit" class="white">用户评论列表</el-menu-item>
+            </el-menu-item-group>
+          </el-submenu>
         </el-menu>
       </div>
     </div>

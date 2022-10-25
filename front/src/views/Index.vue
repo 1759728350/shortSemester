@@ -13,7 +13,7 @@
           </div>
           <div class="Loc">
             当前所在地:<span class="blue">&nbsp;{{ this.myprovince }}&nbsp;</span>
-            <el-dropdown trigger="click" @command="changeProvice"
+            <el-dropdown trigger="click" @command="changeProvice" placement="top"
               ><router-link to="#" class="a">[点击切换] </router-link>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item
@@ -43,11 +43,11 @@
             <router-link to="/adminLogin" class="a">管理员模式</router-link>
           </div>
           <div class="tab">
-            <el-dropdown @command="handleUser">
+            <el-dropdown @command="handleUser" >
               <span class="el-dropdown-link a">
                 个人中心<i class="el-icon-arrow-down el-icon--right"></i>
               </span>
-              <el-dropdown-menu slot="dropdown" lass="dropdown">
+              <el-dropdown-menu slot="dropdown" lass="dropdown" style="top:0">
                 <div>
                   <el-dropdown-item command="1">个人信息</el-dropdown-item>
                 </div>
@@ -1069,11 +1069,11 @@ export default {
     },
     //查找方法
     search() {
-      
       if (this.find != "" && this.find.length != 0) {
-         this.showData = this.carList
+        console.log(this.carList)
+          this.showData = this.carList
           this.showData = this.showData.filter((item) => {
-            return item.carModel.indexOf(this.find) != -1;
+            return item.carInfo.indexOf(this.find) != -1;
           });
       }else{
           this.getCarAndCarCompanyInfo()
@@ -1365,4 +1365,5 @@ export default {
   width: 75%;
   height: 18%;
 }
+
 </style>

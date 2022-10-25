@@ -49,6 +49,11 @@ const routes = [
         path:"/carCompany",
         name:"carCompany",
         component:()=> import("../views/CarCompany.vue")
+      },
+      {
+        path:"/Commit",
+        name:"commit",
+        component:()=> import("../views/Commit.vue")
       }
     ]
   },

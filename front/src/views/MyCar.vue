@@ -54,7 +54,7 @@
 
                 <div class="bottom clearfix">
                   <el-button type="primary" class="leftbutton" >等待租借</el-button>
-                  <el-button type="danger" class="button" @click="deleteCar(o.carId)">取消租借</el-button>
+                  <el-button type="danger" class="button" @click="removeRent(o.carId)">取消租借</el-button>
                 </div>
               </template>
               <template v-if="o.state == 0">
@@ -191,6 +191,25 @@ export default {
     };
   },
   methods: {
+    //移除租借(将租借状态改为2)
+    removeRent(carId){
+      axios.put(`http://localhost:8000/user/removeRent?carId=${carId}`).then(res=>{
+        if(res.data.code===200){
+           this.$message({
+            showClose: true,
+            message: "取消成功!",
+            type: "success",
+          });
+        }
+        this.getMyCar()
+      }).catch(err=>{
+         this.$message({
+            showClose: true,
+            message: "取消失败!",
+            type: "error",
+          });
+      })
+    },
     //出租车辆
     rentCar(car){
       axios.put("http://localhost:8000/user/userRentCar",{
