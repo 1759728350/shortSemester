@@ -30,14 +30,15 @@
               <div>汽车颜色:{{ o.carColor }}</div>
               <template v-if="o.state == 0">
                 <div>车牌号:{{ o.carNumber }}</div>
-                <div>租借金额:{{ o.LeaseAmount }}元/月</div>
+                <div>租借金额:{{ o.leaseAmount }}元/月</div>
                 <div>车辆使用时间:{{ o.useTime }}年</div>
                 <div>已行驶里程:{{ o.mileage }}里</div>
                 <div>车辆备注:{{ o.carInfo }}</div>
+                <div>开始租借时间:{{ o.startTime }}</div>
+                <div>结束租借时间:{{ o.endTime }}</div>
 
                 <div class="bottom clearfix">
-                  <el-button type="primary" class="leftbutton" @click="rentCar(o)">租借中</el-button>
-                  <el-button type="danger" class="button" @click="deleteCar(o.carId)">提前还车</el-button>
+                  <el-button type="primary" class="leftbutton" @click="endRentByEarly(o.carId)">提前结束</el-button>
                 </div>
               </template>
             </div>
@@ -91,26 +92,29 @@ export default {
     };
   },
   methods: {
-    deleteCar(cid){
-       axios
-        .delete(`http://localhost:8000/admin/deleteCarById?carId=${cid}`)
-        .then((res) => {
-          this.$message({
+    endRentByEarly(carId){
+      let userId =  JSON.parse(localStorage.user).userId
+      console.log(userId)
+      axios.put(`http://localhost:8000/user/endRentByEarly?userId=${userId}&carId=${carId}`).then(res=>{
+        if(res.data.code===200){
+           this.$message({
             showClose: true,
-            message: "删除成功!",
+            message: "取消成功!",
             type: "success",
           });
           this.getMyCar()
-        })
-        .catch((err) => {
-          console.log(err);
+        }else{
           this.$message({
             showClose: true,
-            message: "删除失败",
+            message: "取消失败!",
             type: "error",
           });
-        });
-    },
+        }
+      }).catch(err=>{
+        console.log("结束失败")
+      })
+    }
+    ,
     handleClose() {
       this.dialogVisible2 = false;
       for (let i in this.form) {
@@ -139,45 +143,14 @@ export default {
     //获取我的租车信息
     getMyCar() {
       let userId = JSON.parse(localStorage.user).userId;
-     
       axios
-        .get(`http://localhost:8000/user/userAndCarInfo?userId=${userId}`)
+        .get(`http://localhost:8000/user/getMyRentInfo?userId=${userId}`)
         .then((res) => {
           this.carAndUser = res.data.data;
           console.log(this.carAndUser);
         })
         .catch((err) => {
           console.log(err);
-        });
-    },
-    //新增车辆
-    postData() {
-       this.form.carLoc =  localStorage.getItem("myloc");
-      axios
-        .post(`http://localhost:8000/admin/addCar`, this.form)
-        .then((res) => {
-          this.getMyCar()
-          this.dialogVisible2 = false;
-          for (let i in this.form) {
-            this.form[i] = "";
-          }
-          this.$message({
-            showClose: true,
-            message: "添加成功!",
-            type: "success",
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-          for (let i in this.form) {
-            this.form[i] = "";
-          }
-          this.search = "";
-          this.$message({
-            showClose: true,
-            message: "添加失败!",
-            type: "error",
-          });
         });
     },
     //随机字符串
@@ -192,6 +165,7 @@ export default {
       }
       return pwd;
     },
+    
   },
 };
 </script>

@@ -154,14 +154,14 @@ export default {
       user: [],
       carid: "",
       form: {
-        userId:"",
-        userAccount:"",
-        userPassword:"",
-        userLoc:"",
-        userEmail:"",
-        userName:"",
-        userPhone:"",
-        vipId:""
+        userId: "",
+        userAccount: "",
+        userPassword: "",
+        userLoc: "",
+        userEmail: "",
+        userName: "",
+        userPhone: "",
+        vipId: "",
       },
     };
   },
@@ -185,15 +185,15 @@ export default {
     },
     //更新用户
     putData() {
-      if(this.form.vipId==""){
-        this.form.vipId="0";
+      if (this.form.vipId == "") {
+        this.form.vipId = "0";
       }
       axios
-        .put(`http://localhost:8000/admin/updateUser`,this.form)
+        .put(`http://localhost:8000/admin/updateUser`, this.form)
         .then((res) => {
           this.getUser();
           this.dialogVisible2 = false;
-           this.$message({
+          this.$message({
             message: "修改成功",
             type: "success",
           });
@@ -218,7 +218,7 @@ export default {
     //新增用户
     postData() {
       axios
-        .post(`http://localhost:8000/admin/addUser`,this.form)
+        .post(`http://localhost:8000/admin/addUser`, this.form)
         .then((res) => {
           //成功,置空所有form中的key值
           for (let i in this.form) {
@@ -262,21 +262,28 @@ export default {
     },
     //删除用户
     handleDelete(index, row) {
-      console.log(row.userId)
+      console.log(row.userId);
       axios
         .delete(`http://localhost:8000/admin/deleteUser?userId=${row.userId}`)
         .then((res) => {
-          this.getUser();
-          this.currentPage = 1;
-          this.$message({
-            message: "删除成功",
-            type: "success",
-          });
+          console.log(res)
+          if (res.data.code == 200) {
+            this.getUser();
+            this.currentPage = 1;
+            this.$message({
+              message: "删除成功",
+              type: "success",
+            })
+          }else{
+             this.$message({
+              message: "删除失败,该用户还未还车",
+              type: "error",
+            })
+          }
         })
         .catch((ERR) => {
-          
           this.$message({
-            message: "删除失败",
+            message: "删除失败!",
             type: "error",
           });
         });

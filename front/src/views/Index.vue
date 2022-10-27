@@ -205,13 +205,13 @@
             ></el-empty>
             <div class="card" v-for="card in showData" v-if="!showCar">
               <div
-                class="leftImg"
-                :style="[
-                  { background: 'url(' + card.carImg + ')' },
-                  { backgroundSize: 'cover' },
-                  { marginLeft: '25px' },
-                ]"
-              ></div>
+                class="leftImg">
+                <el-image
+      style="width: 100%; height: 100%"
+      :src="card.carImg"
+      :fit="contain"></el-image>
+
+              </div>
               <div class="rightText">
                 <div class="Text">
                   <h1>{{ card.carInfo }}</h1>
@@ -297,7 +297,7 @@ export default {
       isLogin: false,
       userDialog: false,
       getVip: false,
-      myLoc:"",
+      myLoc: "",
       vipLevel: "",
       form: {
         userId: "",
@@ -313,7 +313,7 @@ export default {
       carType: "people",
       currentPage: 1,
       find: "",
-      showData:[],
+      showData: [],
       myprovince: "北京",
       mycity: [],
       isShow: false,
@@ -981,7 +981,7 @@ export default {
     //获取当前城市所有租借车辆和汽车公司信息
     getCarAndCarCompanyInfo() {
       //获取汽车公司信息
-      localStorage.setItem("myloc",this.location)
+      localStorage.setItem("myloc", this.location);
       axios
         .get(`http://localhost:8000/company/city?myCity=${this.location}`)
         .then((res) => {
@@ -1011,7 +1011,7 @@ export default {
             this.carList = this.carList.filter((item) => {
               return item.state == 1 && item.userId != this.userId;
             });
-            this.showData = this.carList
+            this.showData = this.carList;
             this.showCar = false;
           }
         })
@@ -1031,7 +1031,7 @@ export default {
         }
         this.location = this.mycity[0];
       });
-     
+
       this.getCarAndCarCompanyInfo();
     },
     //用户下拉
@@ -1046,9 +1046,13 @@ export default {
         this.GotoMyCar();
       }
       if (command == 3) {
-        this.$router.push({
-          path:"/myRent"
-        });
+        if (!this.loginFilter()) {
+          this.$router.push({
+            path: "/myRent",
+          });
+        } else {
+          this.loginJump();
+        }
       }
     },
     //获取用户信息
@@ -1070,13 +1074,13 @@ export default {
     //查找方法
     search() {
       if (this.find != "" && this.find.length != 0) {
-        console.log(this.carList)
-          this.showData = this.carList
-          this.showData = this.showData.filter((item) => {
-            return item.carInfo.indexOf(this.find) != -1;
-          });
-      }else{
-          this.getCarAndCarCompanyInfo()
+        console.log(this.carList);
+        this.showData = this.carList;
+        this.showData = this.showData.filter((item) => {
+          return item.carInfo.indexOf(this.find) != -1;
+        });
+      } else {
+        this.getCarAndCarCompanyInfo();
       }
     },
     //退出登录
@@ -1084,7 +1088,7 @@ export default {
       (this.userId = ""), (this.userName = ""), localStorage.clear();
       this.isLogin = false;
       this.$message.warning("已登出");
-      this.getMyCity()
+      this.getMyCity();
     },
     //用户修改个人信息
     changeUserInfo() {
@@ -1333,6 +1337,7 @@ export default {
 .leftImg {
   width: 25%;
   height: 100%;
+  /* background-size: 100% 100%; */
 }
 .rightText {
   width: 75%;
@@ -1365,5 +1370,4 @@ export default {
   width: 75%;
   height: 18%;
 }
-
 </style>

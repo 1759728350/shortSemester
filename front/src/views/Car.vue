@@ -174,7 +174,7 @@
         <el-form-item label="车辆型号">
           <el-input v-model="form.carModel"></el-input>
         </el-form-item>
-         <el-form-item label="车辆所在地">
+        <el-form-item label="车辆所在地">
           <el-input v-model="form.carLoc"></el-input>
         </el-form-item>
         <el-form-item label="车牌号">
@@ -289,12 +289,11 @@ export default {
             type: "success",
           });
           for (let i in this.form) {
-            if(i=='carType'||i=='state'){
-                this.form[i] = 1;
-            }else{
+            if (i == "carType" || i == "state") {
+              this.form[i] = 1;
+            } else {
               this.form[i] = "";
             }
-          
           }
           this.currentPage = 1;
           this.search = "";
@@ -339,14 +338,22 @@ export default {
       axios
         .delete(`http://localhost:8000/admin/deleteCarById?carId=${row.carId}`)
         .then((res) => {
-          this.$message({
-            showClose: true,
-            message: "删除成功!",
-            type: "success",
-          });
-          this.currentPage = 1;
-          this.search = "";
-          this.getAlldata();
+          if (res.data.code == 200) {
+            this.$message({
+              showClose: true,
+              message: "删除成功!",
+              type: "success",
+            });
+            this.currentPage = 1;
+            this.search = "";
+            this.getAlldata();
+          } else {
+            this.$message({
+              showClose: true,
+              message: "删除失败,车辆正在被租用!",
+              type: "error",
+            });
+          }
         })
         .catch((err) => {
           console.log(err);
@@ -372,7 +379,6 @@ export default {
         .then((res) => {
           this.tableData = res.data.data;
           this.showData = this.tableData;
-          
         })
         .catch((err) => {
           console.log(err);
@@ -400,9 +406,9 @@ export default {
           this.getAlldata();
           this.dialogVisible = false;
           for (let i in this.form) {
-            if(i=='carType'||i=='state'){
-                this.form[i] = 1;
-            }else{
+            if (i == "carType" || i == "state") {
+              this.form[i] = 1;
+            } else {
               this.form[i] = "";
             }
           }

@@ -5,7 +5,10 @@
         <el-button
           style="float: right; padding: 3px 0;font-size:20px"
           type="text"
-          @click="dialogVisible = true"
+          @click="()=>{
+            this.dialogVisible = true;
+            this.form.carCid = this.randomString(15)
+          }"
           >添加汽车公司</el-button
         >
         <h2 class="search">
@@ -72,7 +75,7 @@
     >
         <el-form ref="form" :model="form" label-width="100px" label-position="left">
         <el-form-item label="公司id">
-          <el-input v-model="form.carCid"></el-input>
+          <el-input v-model="form.carCid" disabled></el-input>
         </el-form-item>
         </el-form-item>
         <el-form-item label="公司名称">
@@ -140,21 +143,21 @@ export default {
     return {
       search: "",
       dialogVisible: false,
-      dialogVisible2:false,
-      length:0,
+      dialogVisible2: false,
+      length: 0,
       showData: [],
       currentPage: 1,
       user: [],
       price: "",
       carCompany: [],
-      carid:"",
+      carid: "",
       form: {
-        carCid:"",
-        carCname:"",
-        carCLoc:"",
-        carCEmail:"",
-        carPhone:"",
-        carCInfo:"",
+        carCid: "",
+        carCname: "",
+        carCLoc: "",
+        carCEmail: "",
+        carPhone: "",
+        carCInfo: "",
       },
     };
   },
@@ -162,41 +165,47 @@ export default {
     this.getUser();
   },
   methods: {
-    close(type){
-      if(type==1){
-        this.dialogVisible = false
-      }else{
-        this.dialogVisible2 = false
+    close(type) {
+      if (type == 1) {
+        this.dialogVisible = false;
+      } else {
+        this.dialogVisible2 = false;
       }
-      for(let i in this.form){
-           if(i!="isziti"){
-              this.form[i] = ""
-           }else{
-             this.form[i] = false
-           }
+      for (let i in this.form) {
+        if (i != "isziti") {
+          this.form[i] = "";
+        } else {
+          this.form[i] = false;
         }
+      }
     },
-    putData(){
-        axios.put(`http://localhost:8000/admin/updateCompany`,this.form).then(res=>{
-         this.getUser()
-         this.dialogVisible2 = false
-         for(let i in this.form){
-              this.form[i] = ""
-         }
+    putData() {
+      axios
+        .put(`http://localhost:8000/admin/updateCompany`, this.form)
+        .then((res) => {
+          this.getUser();
+          this.dialogVisible2 = false;
+          for (let i in this.form) {
+            this.form[i] = "";
+          }
           this.$message({
             message: "修改成功",
             type: "success",
           });
-      }).catch(err=>{
-           this.$message({
+        })
+        .catch((err) => {
+          this.$message({
             message: "修改失败",
             type: "error",
           });
-      })
+        });
     },
-    changeCurrent(val){
-      this.currentPage = val
-      this.showData = this.user.slice((this.currentPage-1)*5,this.currentPage*5)
+    changeCurrent(val) {
+      this.currentPage = val;
+      this.showData = this.user.slice(
+        (this.currentPage - 1) * 5,
+        this.currentPage * 5
+      );
     },
     //新增
     postData() {
@@ -205,11 +214,11 @@ export default {
         .then((res) => {
           //成功,置空所有form中的key值
           for (let i in this.form) {
-              this.form[i] = "";
+            this.form[i] = "";
           }
-          this.getUser()
-          this.dialogVisible = false
-          this.currentPage = 1
+          this.getUser();
+          this.dialogVisible = false;
+          this.currentPage = 1;
           this.$message({
             message: "新增成功",
             type: "success",
@@ -227,48 +236,67 @@ export default {
       axios
         .get(`http://localhost:8000/admin/selectAllCompany`)
         .then((res) => {
-          console.log(res.data)
+          console.log(res.data);
           this.user = res.data.data;
-          this.showData = this.user.slice(0,5)
-          this.length = this.user.length
+          this.showData = this.user.slice(0, 5);
+          this.length = this.user.length;
         })
         .catch((err) => {
           console.log(err);
         });
     },
     handleEdit(index, row) {
-      this.dialogVisible2 = true
-      for(let i in this.form){
-        this.form[i] = row[i]
+      this.dialogVisible2 = true;
+      for (let i in this.form) {
+        this.form[i] = row[i];
       }
     },
     //删除汽车公司
     handleDelete(index, row) {
-      axios.delete(`http://localhost:8000/admin/deleteCompanyById?carCompanyId=${row.carCid}`).then(res=>{
-         this.getUser()
-         this.currentPage = 1;
-          this.$message({
-            message: "删除成功",
-            type: "success",
-          });
-      }).catch(ERR=>{
+      axios
+        .delete(
+          `http://localhost:8000/admin/deleteCompanyById?carCompanyId=${row.carCid}`
+        )
+        .then((res) => {
+          if (res.data.code === 3000) {
+            this.currentPage = 1;
+            this.$message({
+              message: res.data.msg,
+              type: "error",
+            });
+          } else {
+            this.getUser();
+            this.currentPage = 1;
+            this.$message({
+              message: "删除成功",
+              type: "success",
+            });
+          }
+        })
+        .catch((ERR) => {
           this.$message({
             message: "删除失败",
             type: "error",
           });
-      })
+        });
     },
     handleSizeChange() {},
 
     //分页触发
-    next(){
-      this.currentPage++
-      this.showData = this.user.slice((this.currentPage-1)*5,this.currentPage*5)
+    next() {
+      this.currentPage++;
+      this.showData = this.user.slice(
+        (this.currentPage - 1) * 5,
+        this.currentPage * 5
+      );
     },
     //前一页
-    prev(){
-      this.currentPage--
-      this.showData = this.user.slice((this.currentPage-1)*5,this.currentPage*5)
+    prev() {
+      this.currentPage--;
+      this.showData = this.user.slice(
+        (this.currentPage - 1) * 5,
+        this.currentPage * 5
+      );
     },
     //关闭之前
     handleClose(done) {
@@ -280,13 +308,24 @@ export default {
     },
     //根据名字搜索
     find() {
-      this.showData = this.user.filter(item=>{
-        return item.carCname.indexOf(this.search)!=-1
-      })
-      this.length = this.showData.length
-      if(this.showData.length>5){
-        this.showData = this.showData.slice(0,5)
+      this.showData = this.user.filter((item) => {
+        return item.carCname.indexOf(this.search) != -1;
+      });
+      this.length = this.showData.length;
+      if (this.showData.length > 5) {
+        this.showData = this.showData.slice(0, 5);
       }
+    },
+    //随机字符串
+    randomString(len) {
+      len = len || 32;
+      var $chars = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678";
+      var maxPos = $chars.length;
+      var pwd = "";
+      for (let i = 0; i < len; i++) {
+        pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
+      }
+      return pwd;
     },
   },
 };
@@ -299,7 +338,6 @@ export default {
 .body2 {
   width: 100%;
   height: 100%;
-
 }
 .box-card {
   width: 100%;
