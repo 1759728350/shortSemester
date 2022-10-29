@@ -40,7 +40,7 @@
                 <div>车牌号:{{ o.carNumber }}</div>
                 <div>租借金额:{{ o.LeaseAmount }}元/月</div>
                 <div>车辆使用时间:{{ o.useTime }}年</div>
-                <div>已行驶里程:{{ o.mileage }}里</div>
+                <div>已行驶里程:{{ o.Mileage }}里</div>
                 <div>车辆备注:{{ o.carInfo }}</div>
 
                 <div class="bottom clearfix">
@@ -106,7 +106,7 @@
       <el-empty description="未找到任何相关信息"></el-empty>
     </div>
     <el-dialog
-      title="编辑车辆"
+      title="添加车辆"
       :visible.sync="dialogVisible2"
       width="30%"
       :before-close="handleClose"
@@ -155,6 +155,7 @@
             :min="1"
             :max="99999"
           ></el-input-number>
+          元/月
         </el-form-item>
         <el-form-item label="逾期金额">
           <el-input-number
@@ -162,6 +163,7 @@
             :min="1"
             :max="99999"
           ></el-input-number>
+          元/月
         </el-form-item>
         <el-form-item label="汽车品牌">
           <el-input v-model="form.carBrand"></el-input>
@@ -341,7 +343,10 @@ export default {
           this.getMyCar();
           this.dialogVisible2 = false;
           for (let i in this.form) {
-            this.form[i] = "";
+            if(i!="state"){
+              this.form[i] = "";
+            }
+            
           }
           this.$message({
             showClose: true,

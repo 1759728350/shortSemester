@@ -205,13 +205,21 @@
             ></el-empty>
             <div class="card" v-for="card in showData" v-if="!showCar">
               <div
+                class="leftImg"
+                :style="[
+                  { background: 'url(' + card.carImg + ')' },
+                  { backgroundSize: '100% 100%' },
+                  { marginLeft: '25px' },
+                ]"
+              ></div>
+              <!-- <div
                 class="leftImg">
                 <el-image
-      style="width: 100%; height: 100%"
+      style="width: 100%; height: 170px"
       :src="card.carImg"
       :fit="contain"></el-image>
 
-              </div>
+              </div> -->
               <div class="rightText">
                 <div class="Text">
                   <h1>{{ card.carInfo }}</h1>
@@ -248,12 +256,17 @@
         <el-form-item label="用户手机" label-width="90px">
           <el-input v-model="form.userPhone"></el-input>
         </el-form-item>
-        <el-form-item label="用户所在地" label-width="90px">
+        <el-form-item label="用户所在省" label-width="90px">
+          <!-- <el-cascader
+    v-model="this.form.userLoc"
+    :options="cityList"
+    :props="{label:'province',children:'city',value:'province'}"
+    @change="handleChange"></el-cascader> -->
           <el-select v-model="form.userLoc" placeholder="请选择区域">
             <el-option
-              :label="loc"
-              :value="loc"
-              v-for="loc in mycity"
+              :label="item.province"
+              :value="item.province"
+              v-for="item in cityList"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -292,6 +305,7 @@ export default {
       userName: "",
       userId: "",
       city: [],
+      cityArr: [],
       //main中展示汽车的boolean
       showCar: false,
       isLogin: false,
@@ -319,6 +333,7 @@ export default {
       isShow: false,
       companyList: [],
       carList: [],
+      cityArr: [],
       cityList: [
         { province: "北京", city: ["北京市"] },
         { province: "天津", city: ["天津市"] },
@@ -934,6 +949,7 @@ export default {
     },
     //修改用户信息
     putUser() {
+      console.log(this.form.userLoc)
       axios
         .put(`http://localhost:8000/user/updateInfo`, this.form)
         .then((res) => {
@@ -1058,6 +1074,7 @@ export default {
     //获取用户信息
     getUserInfo() {
       let temp = localStorage.user;
+       console.log(temp)
       if (temp != null && temp != undefined) {
         this.userId = JSON.parse(localStorage.user).userId;
         this.userName = JSON.parse(localStorage.user).userName;
@@ -1097,6 +1114,8 @@ export default {
       } else {
         this.userDialog = true;
         let user = JSON.parse(localStorage.user);
+        console.log("changeUserInfo方法")
+        console.log(user)
         this.form.userId = user.userId;
         this.form.userName = user.userName;
         this.form.userEmail = user.userEmail;
@@ -1314,6 +1333,7 @@ export default {
   width: 100%;
   height: 61%;
   overflow: auto;
+  /* background-color: red; */
 }
 .oneTab span,
 .twoTab span {

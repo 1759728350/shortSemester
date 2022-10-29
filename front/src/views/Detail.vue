@@ -56,11 +56,11 @@
             <p>车辆类型:{{ car.carModel }}</p>
             <p>颜色:{{ car.carColor }}</p>
             <p>使用时间:{{ car.useTime }}年</p>
-            <p>行驶里程:{{ car.mileage }}里</p>
+            <p>行驶里程:{{ car.mileage }}公里</p>
             <p>租借金额:{{ car.leaseAmount }}元/月</p>
             <p>品牌:{{ car.carBrand }}</p>
             <p>所在地:{{ car.carLoc }}</p>
-            <p>逾期金额:{{ car.deposit }}元/月</p>
+            <p>逾期金额:{{ car.overdueAmount }}元/月</p>
             <br />
             <el-button type="danger" @click="rent()">租借车辆</el-button>
             <br />
